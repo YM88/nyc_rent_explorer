@@ -1,0 +1,62 @@
+---
+title: 'Final Project: Project Plan Assignment'
+author: "Yashar Mansouri, Joshua O'Steen, Christopher Hoffman"
+date: "3/28/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+
+Each Group Member will have write privileges by default.
+
+All written deliverables should be managed within GitHub using appropriate branches, pushes, pull requests, and merge methods as agreed upon by your group.
+
+
+EVERYONE MUST PUSH TO GITHUB
+
+
+• Write a one to two page report in R Markdown. Include the following elements:
+
+App Title and Names of your group members (1)
+
+Description of the problem to be analyzed in the Shiny App (1)
+
+Proposed data sources. (1)
+
+
+Concept for the Shiny App
+Overall Layout (1)
+
+
+
+
+Data Analysis and Visualization with User Choices and Results (2)
+- line plot time series - avg rent price
+- avg income per year
+- avg home sales price per year
+
+
+Statistical Modeling with User Choices and Results (2)
+
+- mean
+- median
+- linear regression to predict in the next few years
+
+If group has only 413 students, the points go to Data Analysis and Visualization
+
+
+Allocation of Responsibilities for the team (1)
+
+
+
+
+
+Project Steps/Schedule (1)
+
+schedule???
