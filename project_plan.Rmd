@@ -40,7 +40,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 -   Line plot time series - AVG rent price - AVG home sales price per year
 
-### Statistical Modeling with User Choices and Results (2)
+### Statistical Modeling with User Choices and Results
 
 -   Mean
 -   Median
