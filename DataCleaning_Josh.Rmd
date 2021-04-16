@@ -1,0 +1,95 @@
+---
+title: "Data Cleaning"
+author: "Joshua V. O'Steen"
+date: "4/5/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Data Cleaning
+```{r}
+library(tidyverse)
+
+create_data <- function(file, nameOfValues){
+  if(is.character(file)==F | is.character(nameOfValues)==F){
+    stop("BOTH arguments in function MUST be strings!")
+  } else
+  df <- read.csv(file, stringsAsFactors = FALSE)
+  df %>% 
+    filter(areaType == "neighborhood") %>%
+    pivot_longer(cols = 4:length(df),
+                 names_to = "yearMonth",
+                 values_to = nameOfValues) %>% 
+    mutate(yearMonth = (as.Date(paste(yearMonth, ".01", sep = ""),format = "X%Y.%m.%d"))) %>% 
+    select(-areaType) -> df
+  return(df)
+}
+
+create_data("./data/medianAskingRent_Studio.csv", "Studio") -> medRent_Studio
+create_data("./data/medianAskingRent_OneBd.csv", "One Bedroom") -> medRent_OneBd
+create_data("./data/medianAskingRent_TwoBd.csv", "Two Bedrooms") -> medRent_TwoBd
+create_data("./data/medianAskingRent_ThreePlusBd.csv", "Three+ Bedrooms") -> medRent_ThreePlusBd
+```
+
+# Geocode stuff
+This part is required so that we can match the data and neighborhoods to long and lat values which are required for the leaflet plot. 
+```{r}
+library(jsonlite)
+library(broom)
+
+geoCodes <- read_json("./data/geoCodes.json", simplifyVector = T)
+geoCodes$features %>% as_tibble() -> geoCodes_df
+
+flatten(geoCodes_df) -> flatgeoCodes_df
+
+flatgeoCodes_df %>% 
+  select(geometry.coordinates, properties.name, properties.borough) %>% 
+  unnest(geometry.coordinates) %>% 
+  mutate(rownum = row_number(),
+         isLatitude = rownum %% 2 == 0,
+         coord = case_when(isLatitude == T ~ "Latitude",
+                           isLatitude == F ~ "Longitude")) %>% 
+  pivot_wider(id_cols = c(geometry.coordinates, coord, properties.name, properties.borough), names_from = coord, values_from = geometry.coordinates) %>% 
+  rename("areaName" = "properties.name", "Borough" = "properties.borough") -> geoCodes_clean
+  
+```
+
+# Full Complete Data
+Here is where the complete data is. The csv is not written yet. 
+```{r}
+all_data <- medRent_Studio %>% 
+  left_join(medRent_OneBd, by = c("areaName", "Borough", "yearMonth")) %>% 
+  left_join(medRent_TwoBd, by = c("areaName", "Borough", "yearMonth")) %>% 
+  left_join(medRent_ThreePlusBd, by = c("areaName", "Borough", "yearMonth")) %>% 
+  left_join(geoCodes_clean, by = c("areaName", "Borough")) %>% 
+  pivot_longer(cols = c(4:7),
+               names_to = "Rental_Type",
+               values_to = "Median_Asking_Rent")
+
+# Write csv file
+write_csv(all_data, file = "./data/all_data.csv")
+```
+
+# Polygon stuff (For the shiny app. This is here just to prove that it can be done successfully and that we have figured it out.)
+```{r}
+library(httr)
+library(rgdal)
+
+r <- GET('http://data.beta.nyc//dataset/0ff93d2d-90ba-457c-9f7e-39e47bf2ac5f/resource/35dd04fb-81b3-479b-a074-a27a37888ce7/download/d085e2f8d0b54d4590b1e7d1f35594c1pediacitiesnycneighborhoods.geojson')
+nyc_neighborhoods <- readOGR(dsn = content(r,'text'), verbose = F)
+nyc_neighborhoods@data$neighborhood %>% as.data.frame() %>% distinct() %>% setNames("Area") %>% mutate(Area = as.character(Area))
+
+### Below is an example of the leaflet map in action. This code will exist somewhere in the shiny app itself. 
+# library(leaflet)
+# nyc_neighborhoods[nyc_neighborhoods@data$neighborhood == "Wakefield",] %>%
+#   leaflet(height = "380px") %>%
+#                 addTiles() %>%
+#                 setView(-73.84720, 40.89471, zoom = 13) %>%
+#                 addPolygons(popup = ~neighborhood,
+#                             weight = 1,
+#                             fillColor = "blue", fillOpacity = 0.35)
+```
+
