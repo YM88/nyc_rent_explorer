@@ -3,10 +3,13 @@ library(tidyverse)
 
 ui <- fluidPage(
     # App title
-    titlePanel("Housing Data of New York City"),
+    titlePanel("Financial Housing Data of New York City"),
     tabsetPanel(
         
         # tab 1 - map and time series
+        # perhaps we can structure this section so that there are three 
+        # blocks, upper left, upper right and bottom which hold user input
+        # map and time series respectively
         tabPanel("Map and Time Series Analysis",
                  sidebarLayout(
                      sidebarPanel(
