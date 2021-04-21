@@ -1,5 +1,18 @@
+---
+title: "test_yashar.Rmd"
+author: "JYC"
+date: "4/20/2021"
+output: html_document
+---
+
+```{r}
 library(shiny)
+library(ggplot2)
 library(tidyverse)
+library(broom)
+
+df <- read_rds("./data/all_data.rds")
+
 
 ui <- fluidPage(
     # App title
@@ -31,14 +44,23 @@ ui <- fluidPage(
                      )
                  )),
         
-        # tab 3 - data spreadsheet
+        # tab 4 - data spreadsheet
         tabPanel("Data Spreadsheet",
-                 mainPanel(dataTableOutput("spreadsheet")))
+                 mainPanel(dataTableOutput("df")))
     )
 )
 
 server <- function(input, output, session) {
   
+  
+  ############################################ Spreadsheet
+  
+  output$df <- renderDataTable({df})
+  
+  
 }
 
 shinyApp(ui, server)
+```
+
+
