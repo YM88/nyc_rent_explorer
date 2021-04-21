@@ -1,0 +1,93 @@
+---
+title: "Data Preparation"
+author: "Joshua, Yashar, Chris"
+date: `r Sys.Date()`
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(lubridate))
+suppressPackageStartupMessages(library(jsonlite))
+suppressPackageStartupMessages(library(broom))
+```
+
+# Data Cleaning 
+
+```{r}
+# function for data preparation & cleaning
+
+create_data <- function(file, nameOfValues){
+  if(is.character(file)==F | is.character(nameOfValues)==F){
+    stop("BOTH arguments in function MUST be strings!")
+  } else
+  df <- read.csv(file, stringsAsFactors = FALSE)
+  df %>% 
+    filter(areaType == "neighborhood") %>%
+    pivot_longer(cols = 4:length(df),
+                 names_to = "yearMonth",
+                 values_to = nameOfValues) %>% 
+    mutate(yearMonth = as.Date(paste(yearMonth, ".01", sep = ""),format = "X%Y.%m.%d")) %>% 
+    select(-areaType) -> df
+  return(df)
+}
+```
+
+
+```{r}
+create_data("../data-raw/medianAskingRent_Studio.csv", "Studio") -> 
+  medRent_Studio
+
+create_data("../data-raw/medianAskingRent_OneBd.csv", "One Bedroom") -> 
+  medRent_OneBd
+
+create_data("../data-raw/medianAskingRent_TwoBd.csv", "Two Bedrooms") -> 
+  medRent_TwoBd
+
+create_data("../data-raw/medianAskingRent_ThreePlusBd.csv", "Three+ Bedrooms") -> medRent_ThreePlusBd
+```
+
+# Adding geocode information
+
+This part is required so that we can match the data and neighborhoods to long and lat values which are required for the leaflet plot. 
+
+```{r}
+geoCodes <- read_json("../data-raw/geoCodes.json", simplifyVector = T)
+geoCodes$features %>% as_tibble() -> geoCodes_df
+
+flatten(geoCodes_df) -> flatgeoCodes_df
+
+flatgeoCodes_df %>% 
+  select(geometry.coordinates, properties.name, properties.borough) %>% 
+  unnest(geometry.coordinates) %>% 
+  mutate(rownum = row_number(),
+         isLatitude = rownum %% 2 == 0,
+         coord = case_when(isLatitude == T ~ "Latitude",
+                           isLatitude == F ~ "Longitude")) %>% 
+  pivot_wider(id_cols = c(geometry.coordinates, coord, properties.name, properties.borough), names_from = coord, values_from = geometry.coordinates) %>% 
+  rename("areaName" = "properties.name", "Borough" = "properties.borough") -> geoCodes_clean
+  
+```
+
+# Full Complete Data
+
+Here is where the complete data is.
+```{r}
+all_data <- medRent_Studio %>% 
+  left_join(medRent_OneBd, by = c("areaName", "Borough", "yearMonth")) %>% 
+  left_join(medRent_TwoBd, by = c("areaName", "Borough", "yearMonth")) %>% 
+  left_join(medRent_ThreePlusBd, by = c("areaName", "Borough", "yearMonth")) %>% 
+  left_join(geoCodes_clean, by = c("areaName", "Borough")) #%>% 
+  # pivot_longer(cols = c(4:7), ### This part isn't needed I've found out but may be needed later. 
+  #              names_to = "Rental_Type",
+  #              values_to = "Median_Asking_Rent")
+```
+
+
+```{r}
+# Write csv and rds file
+write_csv(all_data, file = "../data/all_data.csv")
+
+write_rds(all_data, "../data/all_data.rds", compress = 'gz')
+```
