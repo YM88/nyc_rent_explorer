@@ -1,4 +1,4 @@
-areaName,Borough,yearMonth,Studio,One Bedroom,Two Bedrooms,Three+ Bedrooms,Longitude,Latitude
+Neighborhood,Borough,Date,Studio,One Bedroom,Two Bedrooms,Three+ Bedrooms,Longitude,Latitude
 Astoria,Queens,2010-01-01,1142,1395,1700,2000,-73.91565374304234,40.76850859335492
 Astoria,Queens,2010-02-01,NA,1450,1800,2150,-73.91565374304234,40.76850859335492
 Astoria,Queens,2010-03-01,NA,1450,1800,2100,-73.91565374304234,40.76850859335492
