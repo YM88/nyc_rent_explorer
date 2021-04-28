@@ -161,13 +161,3 @@ server <- function(input, output, session) {
 
 shinyApp(ui, server)
 ```
-
-```{r, fig.width=10}
-df %>%
-  filter(Neighborhood == "Astoria" & Borough == "Queens") %>%
-  ggplot(aes_string(x = "Date", y = "`One Bedroom`")) +
-  geom_line() +
-  geom_smooth(method = "lm", se = FALSE, color = "red") +
-  scale_x_date(breaks = scales::pretty_breaks(n = 10), date_labels = "%b-%Y")
-```
-
