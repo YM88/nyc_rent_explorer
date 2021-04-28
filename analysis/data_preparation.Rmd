@@ -79,7 +79,11 @@ all_data <- medRent_Studio %>%
   left_join(medRent_TwoBd, by = c("areaName", "Borough", "yearMonth")) %>% 
   left_join(medRent_ThreePlusBd, by = c("areaName", "Borough", "yearMonth")) %>% 
   left_join(geoCodes_clean, by = c("areaName", "Borough")) %>% 
-  rename("Date" = yearMonth, "Neighborhood" = areaName)
+  rename("Date" = yearMonth, 
+         "Neighborhood" = areaName, 
+         "One_Bedroom" = `One Bedroom`,
+         "Two_Bedrooms" = `Two Bedrooms`, 
+         "Three_Bedrooms" = `Three+ Bedrooms`)
   # pivot_longer(cols = c(4:7), ### This part isn't needed I've found out but may be needed later. 
   #              names_to = "Rental_Type",
   #              values_to = "Median_Asking_Rent")
