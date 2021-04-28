@@ -1,0 +1,115 @@
+---
+title: "test_chris"
+author: "Christopher Hoffmann"
+date: "4/28/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(shiny)
+library(ggplot2)
+library(tidyverse)
+library(broom)
+library(httr)
+library(rgdal)
+library(leaflet)
+
+df <- read_rds("./data/all_data.rds")
+r <- GET('http://data.beta.nyc//dataset/0ff93d2d-90ba-457c-9f7e-39e47bf2ac5f/resource/35dd04fb-81b3-479b-a074-a27a37888ce7/download/d085e2f8d0b54d4590b1e7d1f35594c1pediacitiesnycneighborhoods.geojson')
+nyc_neighborhoods <- readOGR(dsn = content(r,'text'), verbose = F)
+
+
+ui <- fluidPage(
+    # App title
+    titlePanel("Rent Data of New York City"),
+    tabsetPanel(
+        
+        # tab 1 - map and time series
+        # perhaps we can structure this section so that there are three 
+        # blocks, upper left, upper right and bottom which hold user input
+        # map and time series respectively
+        tabPanel("Map and Time Series Analysis",
+                 sidebarLayout(
+                     sidebarPanel(
+                       # USER INPUT
+                       selectInput("boro", "Select a borough:", choices = c("Manhattan", "Brooklyn", "Queens", "Bronx"), selected = "Manhattan"),
+                       uiOutput("areaSelect"), # This is needed to update the option based on the selected input above.             
+                       selectInput("type", "Select an apartment type:", choices = c("Studio", "One Bedroom", "Two Bedroom", "Three+ Bedrooms"), selected = "Studio")),
+                     mainPanel(
+                       # MAP OUTPUT
+                       leafletOutput("mapPlot")
+                     )
+                 )
+                ),
+
+        # tab 2 - various plots of data
+        tabPanel("Data Distributions and Plots",
+                 sidebarLayout(
+                     sidebarPanel(
+                         # user input
+                     ),
+                     mainPanel(
+                         # chart output
+                     )
+                 )),
+        
+        # tab 4 - data spreadsheet
+        tabPanel("Data Spreadsheet",
+                  dataTableOutput("df")
+      )
+    )
+)
+
+server <- function(input, output, session) {
+    ## Reactive functions
+    # locations availbale by Borough, Neighborhood, longitude and latitude
+    areaList = reactive({
+        df %>%
+            select(Borough, areaName, Longitude, Latitude) %>%
+            distinct() %>%
+            inner_join(nyc_neighborhoods@data$neighborhood %>% as.data.frame() %>% distinct() %>% rename("areaName" = "."), by = "areaName") %>% 
+            filter(!is.na(Latitude), !is.na(Longitude))
+    })
+    ## Helper functions
+    getCoordinates <- function(area) {
+        areaList() %>% 
+            filter(areaName == area) %>% 
+            select(Longitude, Latitude)
+    }
+
+    ## Plots
+    # render the neighborhood selector input
+    output$areaSelect = renderUI({
+        selectInput("neighborhood", "Select a neighborhood:",
+                    choices = c("None", areaList() %>% filter(Borough == input$boro) %>% select(areaName) %>% pull()), selected = "None")
+    })
+    # render the leaflet plot for showing the location of the selected neighborhood
+    output$mapPlot = renderLeaflet({
+        if (input$neighborhood == "None") {
+            leaflet(height = "380px") %>%
+                addTiles() %>%
+                setView(-73.87, 40.73, zoom = 10)
+        } else {
+            nyc_neighborhoods[nyc_neighborhoods@data$neighborhood == input$neighborhood,] %>%
+                leaflet(height = "380px") %>%
+                addTiles() %>%
+                setView(getCoordinates(input$neighborhood)$Longitude, getCoordinates(input$neighborhood)$Latitude, zoom = 13) %>%
+                addPolygons(popup = ~neighborhood,
+                            weight = 1,
+                            fillColor = "Green", fillOpacity = 0.35)
+        }
+    })
+  
+  ## Spreadsheet
+    output$df <- renderDataTable({df}, options = list(pageLength = 10))
+  
+}
+
+shinyApp(ui, server)
+
+```
