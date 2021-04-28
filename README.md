@@ -1,14 +1,12 @@
 <!-- ACKNOWLEDGEMENTS -->
 ## To Dos
 
+* [x] TAB 1 - MAP PLOT + TIME SERIES
+* [ ] TAB 2 - DATA PLOTS + DISTRIBUTIONS
+* [ ] TAB 3 - STATISTICAL ANALYSIS (REGRESSION/ANOVA)
+* [x] TAB 4 - DATA SPREADSHEET
 * [ ] Write README.MD with instructions and screen shots
 * [ ] Write Vignette
-* [ ] TAB 1 - MAP PLOT + TIME SERIES
-* [ ] TAB 1 - MAP PLOT + TIME SERIES
-* [ ] TAB 1 - MAP PLOT + TIME SERIES
-* [x] TAB 1 - MAP PLOT + TIME SERIES
-
-
 
 
 
@@ -39,7 +37,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <p align="center">
-  <h3 align="center">project_title</h3>
+  <h3 align="center">Housing Market Analysis of NYC</h3>
   <p align="center">
     project_description
     <br />
