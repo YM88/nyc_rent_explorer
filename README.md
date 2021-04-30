@@ -38,9 +38,9 @@
 <p align="center">
   <h3 align="center">Multifamily Housing Market Analysis of NYC</h3>
   <p align="center">
-    The purpose of this Shiny app is to provide insights for renters, landlords, and multifamily market researchers in New York City with up to date and useful analysis of rental market data and trends. Analysis is done 
+    The purpose of this Shiny app is to provide insights for renters, landlords, and multifamily market researchers in New York City with up to date and useful analysis of rental market data and trends. 
     <br />
-    <a href="https://github.com/github_username/repo_name"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/STAT-413-613-21S/fp_final-project-cjy"><strong>Explore the repo »</strong></a>
   </p>
 </p>
 
@@ -52,17 +52,17 @@
     <li>
       <a href="#about-the-project">About The Project</a>
       <ul>
-        <li><a href="#built-with">Built With</a></li>
+        <li><a href="#data">Data</a></li>
+        <li><a href="#use-case">Use Case</a></li>
       </ul>
     </li>
     <li>
-      <a href="#getting-started">Getting Started</a>
+      <a href="#how-to-use-the-app">How to Use the App</a>
       <ul>
         <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
+        <li><a href="#example">Example</a></li>
       </ul>
     </li>
-    <li><a href="#usage">Usage</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
@@ -83,16 +83,17 @@ Here's a blank template to get started:
 `github_username`, `repo_name`, `twitter_handle`, `email`, `project_title`, `project_description`
 
 
-### Built With
+### Data
 
 * []()
 * []()
 * []()
 
+### Use Case
+text here 
 
-
-<!-- GETTING STARTED -->
-## Getting Started
+<!-- USAGE -->
+## How to Use the App
 
 To get a local copy up and running follow these simple steps.
 
@@ -100,27 +101,11 @@ To get a local copy up and running follow these simple steps.
 
 * Things to do before running the project
 
-
-### Installation
-
-1. Clone the repo
-   ```sh
-   git clone https://github.com/github_username/repo_name.git
-   ```
-2. Install R packages
-   ```r
-   install.packages("package_name")
-   ```
-
-
-
-<!-- USAGE EXAMPLES -->
-## Usage
+### Example
 
 Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
 
 _For more examples, please refer to the [Documentation](https://example.com)_
-
 
 
 <!-- ROADMAP -->
@@ -153,11 +138,13 @@ Distributed under the MIT License. See `LICENSE` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Your Name - email
-Your Name - email
-Your Name - email
+Josh Vera O'Steen - jo7082a@student.american.edu
 
-Project Link: [https://github.com/github_username/repo_name](https://github.com/github_username/repo_name)
+Yashar Mansouri - ym7190a@student.american.edu
+
+Christopher Hoffman - ch7710a@student.american.edu
+
+Project Link: [https://github.com/STAT-413-613-21S/fp_final-project-cjy](https://github.com/STAT-413-613-21S/fp_final-project-cjy)
 
 
 
@@ -175,7 +162,7 @@ Project Link: [https://github.com/github_username/repo_name](https://github.com/
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [contributors-shield]: https://img.shields.io/github/contributors/github_username/repo.svg?style=for-the-badge
-[contributors-url]: https://github.com/github_username/repo/graphs/contributors
+[contributors-url]: https://github.com/STAT-413-613-21S/fp_final-project-cjy/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/github_username/repo.svg?style=for-the-badge
 [forks-url]: https://github.com/github_username/repo/network/members
 [stars-shield]: https://img.shields.io/github/stars/github_username/repo.svg?style=for-the-badge

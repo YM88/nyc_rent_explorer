@@ -170,14 +170,6 @@ server <- function(input, output, session) {
         }
     })
     
-    # render the time series plot (based on neighborhood and apartment type)
-    # output$ts_single <- renderPlotly({
-    #   if(input$neighborhood == "None"){plotly_empty()} else{
-    #   ts_single() %>% 
-    #     filter(Type == input$type) %>% 
-    #     plot_ly(., x = ~Date, y = ~Median_Rent, type = "scatter", mode = "lines+markers")
-    #   }
-    # })
     output$ts_single <- renderPlotly({
       if(input$neighborhood == "None"){
         ts_singleBoro() %>% 
@@ -215,8 +207,6 @@ shinyApp(ui, server)
 
 ```{r}
 # This code chunk is here to test pieces of shiny app like functions, etc. 
-df_longer %>% 
-        filter(Borough == "Bronx", Neighborhood == "Belmont",
-               !is.na(Median_Rent)) %>% filter(Type == "Three_Bedrooms")
+
 ```
 
