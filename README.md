@@ -16,8 +16,7 @@
 -->
 
 
-
-<!-- PROJECT SHIELDS -->X
+<!-- PROJECT SHIELDS -->
 <!--
 *** I'm using markdown "reference style" links for readability.
 *** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
@@ -37,9 +36,9 @@
 <!-- PROJECT LOGO -->
 <br />
 <p align="center">
-  <h3 align="center">Housing Market Analysis of NYC</h3>
+  <h3 align="center">Multifamily Housing Market Analysis of NYC</h3>
   <p align="center">
-    project_description
+    The purpose of this Shiny app is to provide insights for renters, landlords, and multifamily market researchers in New York City with up to date and useful analysis of rental market data and trends. Analysis is done 
     <br />
     <a href="https://github.com/github_username/repo_name"><strong>Explore the docs »</strong></a>
   </p>

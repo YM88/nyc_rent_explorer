@@ -28,6 +28,16 @@ nyc_neighborhoods <- readOGR(dsn = content(r,'text'), verbose = F)
 df_longer <- pivot_longer(df, cols = 4:7, names_to = "Type", values_to = "Median_Rent") %>% filter(!is.na(Median_Rent)) # New pivoted longer version of df. It's so that we can work with plots in more efficient way. Attempted to just do this in a reactive function, but it doesn't work. 
 
 ui <- fluidPage(theme = shinytheme("cosmo"),
+                tags$head(
+                  tags$style(HTML("
+                    .shiny-output-error-black {
+                      color: black;
+                      font-size: 200%;
+                      display: flex;
+                      align-items: center;
+                    }
+                  "))
+                ),
     # App title
     navbarPage("RENT DATA FOR NEW YORK CITY", collapsable = TRUE,
         
@@ -47,7 +57,7 @@ ui <- fluidPage(theme = shinytheme("cosmo"),
                        selectInput("type", "Select an apartment type:", 
                                    choices = c("Studio", 
                                                "One Bedroom" = "One_Bedroom", 
-                                               "Two Bedrooms" = "Two_Bedroom", 
+                                               "Two Bedrooms" = "Two_Bedrooms", 
                                                "Three+ Bedrooms" = "Three_Bedrooms"), 
                                    selected = "Studio")),
                      mainPanel(
@@ -108,6 +118,10 @@ server <- function(input, output, session) {
         filter(Borough == input$boro, Neighborhood == input$neighborhood,
                !is.na(Median_Rent))
     })
+    ts_singleBoro <- reactive({
+      df_longer %>% 
+        filter(Borough == input$boro, !is.na(Median_Rent)) %>% group_by(Date) %>% summarize(Med_RentBoro = median(Median_Rent))
+    })
     
     # filters data frame for time series plot with multiple apt types (ts_multiple)
     ts_multiple <- reactive({
@@ -152,13 +166,27 @@ server <- function(input, output, session) {
                         zoom = 13) %>%
                 addPolygons(popup = ~neighborhood,
                             weight = 1,
-                            fillColor = "Green", fillOpacity = 0.35)
+                            fillColor = "Blue", fillOpacity = 0.35)
         }
     })
     
     # render the time series plot (based on neighborhood and apartment type)
+    # output$ts_single <- renderPlotly({
+    #   if(input$neighborhood == "None"){plotly_empty()} else{
+    #   ts_single() %>% 
+    #     filter(Type == input$type) %>% 
+    #     plot_ly(., x = ~Date, y = ~Median_Rent, type = "scatter", mode = "lines+markers")
+    #   }
+    # })
     output$ts_single <- renderPlotly({
-      if(input$neighborhood == "None"){plotly_empty()} else{
+      if(input$neighborhood == "None"){
+        ts_singleBoro() %>% 
+           plot_ly(., x = ~Date, y = ~Med_RentBoro, type = "scatter", mode = "lines+markers") %>% 
+          layout(yaxis = list(title = paste("Median Rent for", input$boro)))
+      } else if(ts_single() %>% filter(Type == input$type) %>% nrow() < 10){
+        validate("We apologize, but there is not enough data to produce an informative plot. Please select a different combination of inputs.", errorClass = "black")
+      }
+      else{
       ts_single() %>% 
         filter(Type == input$type) %>% 
         plot_ly(., x = ~Date, y = ~Median_Rent, type = "scatter", mode = "lines+markers")
@@ -187,6 +215,8 @@ shinyApp(ui, server)
 
 ```{r}
 # This code chunk is here to test pieces of shiny app like functions, etc. 
-
+df_longer %>% 
+        filter(Borough == "Bronx", Neighborhood == "Belmont",
+               !is.na(Median_Rent)) %>% filter(Type == "Three_Bedrooms")
 ```
 
