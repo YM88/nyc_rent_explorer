@@ -13,7 +13,6 @@ library(broom)
 
 df <- read_rds("./data/all_data.rds")
 
-
 ui <- fluidPage(
     # App title
     titlePanel("Financial Housing Data of New York City"),

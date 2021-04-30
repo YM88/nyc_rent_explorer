@@ -19,11 +19,12 @@ library(broom)
 library(httr)
 library(rgdal)
 library(leaflet)
+library(plotly)
 
-df <- read_rds("./data/all_data.rds")
+df <- read_rds("data/all_data.rds")
 r <- GET('http://data.beta.nyc//dataset/0ff93d2d-90ba-457c-9f7e-39e47bf2ac5f/resource/35dd04fb-81b3-479b-a074-a27a37888ce7/download/d085e2f8d0b54d4590b1e7d1f35594c1pediacitiesnycneighborhoods.geojson')
 nyc_neighborhoods <- readOGR(dsn = content(r,'text'), verbose = F)
-
+df_longer <- pivot_longer(df, cols = 4:7, names_to = "Type", values_to = "Median_Rent") # New
 
 ui <- fluidPage(
     # App title
@@ -38,16 +39,26 @@ ui <- fluidPage(
                  sidebarLayout(
                      sidebarPanel(
                        # USER INPUT
-                       selectInput("boro", "Select a borough:", choices = c("Manhattan", "Brooklyn", "Queens", "Bronx"), selected = "Manhattan"),
-                       uiOutput("areaSelect"), # This is needed to update the option based on the selected input above.             
-                       selectInput("type", "Select an apartment type:", choices = c("Studio", "One Bedroom", "Two Bedroom", "Three+ Bedrooms"), selected = "Studio")),
+                       selectInput("boro", "Select a borough:", 
+                                   choices = c("Manhattan", "Brooklyn", "Queens", "Bronx"), selected = "Manhattan"),
+                       
+                       uiOutput("areaSelect"), # This is needed to update the option based on the selected input above.
+                       
+                       selectInput("type", "Select an apartment type:", 
+                                   choices = c("Studio", 
+                                               "One Bedroom" = "One_Bedroom", 
+                                               "Two Bedrooms" = "Two_Bedroom", 
+                                               "Three+ Bedrooms" = "Three_Bedrooms"), 
+                                   selected = "Studio")),
                      mainPanel(
                        # MAP OUTPUT
-                       leafletOutput("mapPlot")
+                       leafletOutput("mapPlot"),
+                       
+                       # PLOT OUTPUT
+                       plotlyOutput("ts_plot")
                      )
-                 )
-                )
-        ),
+                  )),
+
         # tab 2 - various plots of data
         tabPanel("Data Distributions and Plots",
                  sidebarLayout(
@@ -59,35 +70,60 @@ ui <- fluidPage(
                      )
                  )),
         
+            # tab 3 - Regression and ANOVA
+    tabPanel("Statistical Analysis",
+             sidebarLayout(
+               sidebarPanel(
+                 # user input
+               ),
+               mainPanel(
+                 # chart output
+               )
+             )),
+        
         # tab 4 - data spreadsheet
         tabPanel("Data Spreadsheet",
                   dataTableOutput("df")
       )
+    )
 )
 
 server <- function(input, output, session) {
-    ## Reactive functions
-    # locations availbale by Borough, Neighborhood, longitude and latitude
+  
+    #--- REACTIVE FUNCTIONS ---#
+  
+    ## locations available by Borough, Neighborhood, longitude and latitude
     areaList = reactive({
         df %>%
-            select(Borough, areaName, Longitude, Latitude) %>%
+            select(Borough, Neighborhood, Longitude, Latitude) %>%
             distinct() %>%
-            inner_join(nyc_neighborhoods@data$neighborhood %>% as.data.frame() %>% distinct() %>% rename("areaName" = "."), by = "areaName") %>% 
+            inner_join(nyc_neighborhoods@data$neighborhood %>% as.data.frame() %>% distinct() %>% rename("Neighborhood" = "."), by = "Neighborhood") %>% 
             filter(!is.na(Latitude), !is.na(Longitude))
     })
-    ## Helper functions
+    
+    ## filters data frame for time series plot (ts_plot)
+    ts_input <- reactive({
+      df_longer %>% filter(Borough == input$boro, Neighborhood == input$neighborhood)
+    })
+    
+    #--- HELPER FUNCTIONS ---#
+    
+    ## grabs coordinates for map
     getCoordinates <- function(area) {
         areaList() %>% 
-            filter(areaName == area) %>% 
+            filter(Neighborhood == area) %>% 
             select(Longitude, Latitude)
     }
 
-    ## Plots
-    # render the neighborhood selector input
+    #--- PLOTS ---#
+    
+    ## render the neighborhood selector input
     output$areaSelect = renderUI({
         selectInput("neighborhood", "Select a neighborhood:",
-                    choices = c("None", areaList() %>% filter(Borough == input$boro) %>% select(areaName) %>% pull()), selected = "None")
+                    choices = c("None", areaList() %>% filter(Borough == input$boro) %>% select(Neighborhood) %>% pull()),
+                    selected = "None")
     })
+    
     # render the leaflet plot for showing the location of the selected neighborhood
     output$mapPlot = renderLeaflet({
         if (input$neighborhood == "None") {
@@ -98,19 +134,35 @@ server <- function(input, output, session) {
             nyc_neighborhoods[nyc_neighborhoods@data$neighborhood == input$neighborhood,] %>%
                 leaflet(height = "380px") %>%
                 addTiles() %>%
-                setView(getCoordinates(input$neighborhood)$Longitude, getCoordinates(input$neighborhood)$Latitude, zoom = 13) %>%
+                setView(getCoordinates(input$neighborhood)$Longitude, 
+                        getCoordinates(input$neighborhood)$Latitude, 
+                        zoom = 13) %>%
                 addPolygons(popup = ~neighborhood,
                             weight = 1,
                             fillColor = "Green", fillOpacity = 0.35)
         }
     })
+    
+    # render the time series plot (based on neighborhood and apartment type)
+    output$ts_plot <- renderPlotly({
+      if(input$neighborhood == "None"){plotly_empty()} else{
+      ts_input() %>% 
+        filter(Type == input$type) %>% 
+        plot_ly(., x = ~Date, y = ~Median_Rent, type = "scatter", mode = "lines+markers")
+      }
+    })
   
-  ## Spreadsheet
-    output$df <- renderDataTable({df}, options = list(pageLength = 10))
+    #--- DATA SPREADSHEET ---#
+    
+    output$df <- renderDataTable({ df }, options = list(pageLength = 10))
   
 }
 
 shinyApp(ui, server)
+```
+
+```{r}
+# This code chunk is here to test pieces of shiny app like functions, etc. 
 
 ```
 
