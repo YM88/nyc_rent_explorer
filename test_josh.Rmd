@@ -24,7 +24,7 @@ library(plotly)
 df <- read_rds("data/all_data.rds")
 r <- GET('http://data.beta.nyc//dataset/0ff93d2d-90ba-457c-9f7e-39e47bf2ac5f/resource/35dd04fb-81b3-479b-a074-a27a37888ce7/download/d085e2f8d0b54d4590b1e7d1f35594c1pediacitiesnycneighborhoods.geojson')
 nyc_neighborhoods <- readOGR(dsn = content(r,'text'), verbose = F)
-df_longer <- pivot_longer(df, cols = 4:7, names_to = "Type", values_to = "Median_Rent") # New
+df_longer <- pivot_longer(df, cols = 4:7, names_to = "Type", values_to = "Median_Rent") %>% filter(!is.na(Median_Rent)) # New pivoted longer version of df. It's so that we can work with plots in more efficient way. Attempted to just do this in a reactive function, but it doesn't work. 
 
 ui <- fluidPage(
     # App title
@@ -55,7 +55,7 @@ ui <- fluidPage(
                        leafletOutput("mapPlot"),
                        
                        # PLOT OUTPUT
-                       plotlyOutput("ts_plot")
+                       plotlyOutput("ts_single")
                      )
                   )),
 
@@ -67,6 +67,7 @@ ui <- fluidPage(
                      ),
                      mainPanel(
                          # chart output
+                       plotlyOutput("ts_multiple")
                      )
                  )),
         
@@ -92,7 +93,7 @@ server <- function(input, output, session) {
   
     #--- REACTIVE FUNCTIONS ---#
   
-    ## locations available by Borough, Neighborhood, longitude and latitude
+    # locations available by Borough, Neighborhood, longitude and latitude
     areaList = reactive({
         df %>%
             select(Borough, Neighborhood, Longitude, Latitude) %>%
@@ -101,14 +102,26 @@ server <- function(input, output, session) {
             filter(!is.na(Latitude), !is.na(Longitude))
     })
     
-    ## filters data frame for time series plot (ts_plot)
-    ts_input <- reactive({
-      df_longer %>% filter(Borough == input$boro, Neighborhood == input$neighborhood)
+    # filters data frame for time series plot with single apt type (ts_single)
+    ts_single <- reactive({
+      df_longer %>% 
+        filter(Borough == input$boro, Neighborhood == input$neighborhood,
+               !is.na(Median_Rent))
+    })
+    
+    # filters data frame for time series plot with multiple apt types (ts_multiple)
+    ts_multiple <- reactive({
+      df %>% 
+        filter(Borough == input$boro, Neighborhood == input$neighborhood,
+               !is.na(Studio),
+               !is.na(One_Bedroom),
+               !is.na(Two_Bedrooms),
+               !is.na(Three_Bedrooms))
     })
     
     #--- HELPER FUNCTIONS ---#
     
-    ## grabs coordinates for map
+    # grabs coordinates for map
     getCoordinates <- function(area) {
         areaList() %>% 
             filter(Neighborhood == area) %>% 
@@ -117,7 +130,7 @@ server <- function(input, output, session) {
 
     #--- PLOTS ---#
     
-    ## render the neighborhood selector input
+    # render the neighborhood selector input
     output$areaSelect = renderUI({
         selectInput("neighborhood", "Select a neighborhood:",
                     choices = c("None", areaList() %>% filter(Borough == input$boro) %>% select(Neighborhood) %>% pull()),
@@ -144,13 +157,23 @@ server <- function(input, output, session) {
     })
     
     # render the time series plot (based on neighborhood and apartment type)
-    output$ts_plot <- renderPlotly({
+    output$ts_single <- renderPlotly({
       if(input$neighborhood == "None"){plotly_empty()} else{
-      ts_input() %>% 
+      ts_single() %>% 
         filter(Type == input$type) %>% 
         plot_ly(., x = ~Date, y = ~Median_Rent, type = "scatter", mode = "lines+markers")
       }
     })
+    
+    output$ts_multiple <- renderPlotly({
+      if(input$neighborhood == "None"){plotly_empty()} else{
+      ts_multiple() %>% 
+        plot_ly(., x = ~Date, y = ~Studio, type = "scatter", mode = "lines+markers", name = "Studio") %>% 
+        add_trace(., x = ~Date, y = ~One_Bedroom, type = "scatter", mode = "lines+markers", name = "One Bedroom") %>% 
+        add_trace(., x = ~Date, y = ~Two_Bedrooms, type = "scatter", mode = "lines+markers", name = "Two Bedrooms") %>% 
+        add_trace(., x = ~Date, y = ~Three_Bedrooms, type = "scatter", mode = "lines+markers", name = "Three+ Bedrooms") %>% layout(title = paste("Median Rent in", input$neighborhood, "Across Apartment Types"), hovermode = "x", yaxis = list(title=""))
+        }
+      })
   
     #--- DATA SPREADSHEET ---#
     
@@ -160,6 +183,7 @@ server <- function(input, output, session) {
 
 shinyApp(ui, server)
 ```
+
 
 ```{r}
 # This code chunk is here to test pieces of shiny app like functions, etc. 
