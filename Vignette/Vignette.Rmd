@@ -32,6 +32,8 @@ h2 {
 
 <!-- CSS STYLES -->
 
+<br>
+
 NYC Rent Explorer is a shiny application that utilizes New York City renting data 
 in order to analyze rent pricing trends. It examines how different apartment types
 and areas of NYC has changed over time.
