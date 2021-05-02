@@ -1,19 +1,22 @@
 ---
-title: "Data Cleaning"
-author: "Joshua V. O'Steen"
-date: "4/5/2021"
+title: "Data Preparation"
+author: "Joshua, Yashar, Chris"
+date: `r Sys.Date()`
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(jsonlite))
+suppressPackageStartupMessages(library(httr))
+
 ```
 
-## Data Cleaning 
-This may be better on an R script file but its an Rmd for now. 
+# Data Cleaning 
+
 ```{r}
-library(tidyverse)
-library(lubridate)
+# function for data preparation & cleaning
 
 create_data <- function(file, nameOfValues){
   if(is.character(file)==F | is.character(nameOfValues)==F){
@@ -29,22 +32,28 @@ create_data <- function(file, nameOfValues){
     select(-areaType) -> df
   return(df)
 }
-
-create_data("./data/medianAskingRent_Studio.csv", "Studio") -> medRent_Studio
-create_data("./data/medianAskingRent_OneBd.csv", "One Bedroom") -> medRent_OneBd
-create_data("./data/medianAskingRent_TwoBd.csv", "Two Bedrooms") -> medRent_TwoBd
-create_data("./data/medianAskingRent_ThreePlusBd.csv", "Three+ Bedrooms") -> medRent_ThreePlusBd
-
-class(medRent_Studio$yearMonth)
 ```
 
-# Geocode stuff
-This part is required so that we can match the data and neighborhoods to long and lat values which are required for the leaflet plot. 
-```{r}
-library(jsonlite)
-library(broom)
 
-geoCodes <- read_json("./data/geoCodes.json", simplifyVector = T)
+```{r}
+create_data("../data-raw/medianAskingRent_Studio.csv", "Studio") -> 
+  medRent_Studio
+
+create_data("../data-raw/medianAskingRent_OneBd.csv", "One Bedroom") -> 
+  medRent_OneBd
+
+create_data("../data-raw/medianAskingRent_TwoBd.csv", "Two Bedrooms") -> 
+  medRent_TwoBd
+
+create_data("../data-raw/medianAskingRent_ThreePlusBd.csv", "Three+ Bedrooms") -> medRent_ThreePlusBd
+```
+
+# Adding geocode information
+
+This part is required so that we can match the data and neighborhoods to long and lat values which are required for the leaflet plot. 
+
+```{r}
+geoCodes <- read_json("../data-raw/geoCodes.json", simplifyVector = T)
 geoCodes$features %>% as_tibble() -> geoCodes_df
 
 flatten(geoCodes_df) -> flatgeoCodes_df
@@ -62,38 +71,50 @@ flatgeoCodes_df %>%
 ```
 
 # Full Complete Data
-Here is where the complete data is. The csv is not written yet. 
+
+Here is where the complete data is.
 ```{r}
 all_data <- medRent_Studio %>% 
   left_join(medRent_OneBd, by = c("areaName", "Borough", "yearMonth")) %>% 
   left_join(medRent_TwoBd, by = c("areaName", "Borough", "yearMonth")) %>% 
   left_join(medRent_ThreePlusBd, by = c("areaName", "Borough", "yearMonth")) %>% 
-  left_join(geoCodes_clean, by = c("areaName", "Borough")) #%>% 
+  left_join(geoCodes_clean, by = c("areaName", "Borough")) %>% 
+  rename("Date" = yearMonth, 
+         "Neighborhood" = areaName, 
+         "One_Bedroom" = `One Bedroom`,
+         "Two_Bedrooms" = `Two Bedrooms`, 
+         "Three_Bedrooms" = `Three+ Bedrooms`)
   # pivot_longer(cols = c(4:7), ### This part isn't needed I've found out but may be needed later. 
   #              names_to = "Rental_Type",
   #              values_to = "Median_Asking_Rent")
-
-# Write csv file
-write_csv(all_data, file = "./data/all_data.csv")
 ```
 
-# Polygon stuff (For the shiny app. This is here just to prove that it can be done successfully and that we have figured it out.)
+
 ```{r}
-library(httr)
-library(rgdal)
+all_data_longer <- pivot_longer(all_data, cols = 4:7, names_to = "Type", values_to = "Median_Rent") %>% 
+  filter(!is.na(Median_Rent))
+```
 
+
+# Creating csv and ds files
+```{r}
+# Writing all_data
+write_csv(all_data, file = "../data/all_data.csv")
+write_rds(all_data, "../data/all_data.rds", compress = 'gz')
+
+# Writing all_data_longer
+write_csv(all_data_longer, file = "../data/all_data_longer.csv")
+write_rds(all_data_longer, "../data/all_data_longer.rds", compress = 'gz')
+```
+# JSON
+```{r}
 r <- GET('http://data.beta.nyc//dataset/0ff93d2d-90ba-457c-9f7e-39e47bf2ac5f/resource/35dd04fb-81b3-479b-a074-a27a37888ce7/download/d085e2f8d0b54d4590b1e7d1f35594c1pediacitiesnycneighborhoods.geojson')
-nyc_neighborhoods <- readOGR(dsn = content(r,'text'), verbose = F)
-nyc_neighborhoods@data$neighborhood %>% as.data.frame() %>% distinct() %>% setNames("Area") %>% mutate(Area = as.character(Area))
+class(r)
 
-### Below is an example of the leaflet map in action. This code will exist somewhere in the shiny app itself. 
-# library(leaflet)
-# nyc_neighborhoods[nyc_neighborhoods@data$neighborhood == "Wakefield",] %>%
-#   leaflet(height = "380px") %>%
-#                 addTiles() %>%
-#                 setView(-73.84720, 40.89471, zoom = 13) %>%
-#                 addPolygons(popup = ~neighborhood,
-#                             weight = 1,
-#                             fillColor = "blue", fillOpacity = 0.35)
+nyc_neighborhoods <- readOGR(dsn = content(r,'text'), verbose = FALSE, 
+                             encoding = 'UTF-8')
+
+names(nyc_neighborhoods)
+rgdal::writeOGR(nyc_neighborhoods, "../data/ny.geojson", layer="ny", driver="GeoJSON")
 ```
 
