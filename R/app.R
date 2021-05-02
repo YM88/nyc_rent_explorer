@@ -63,10 +63,11 @@ ui <- fluidPage(theme = shinytheme("cosmo"),
                                   ),
                                   
                                 ),
+                           ###ROW 2#############################################
                            fluidRow(
                                column(3
                                   ),
-                               column(6,
+                               column(9,
                                   plotlyOutput("ts_single")
                                   ),
                                   
