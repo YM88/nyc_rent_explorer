@@ -197,17 +197,41 @@ server <- function(input, output, session) {
       if(input$neighborhood == "None"){plotly_empty()} else{
       ts_single() %>% 
         filter(Type == input$type) %>% 
-        plot_ly(., x = ~Date, y = ~Median_Rent, type = "scatter", mode = "lines+markers")
+        plot_ly(., x = ~Date, 
+                y = ~Median_Rent, 
+                type = "scatter", 
+                mode = "lines+markers")
       }
     })
     
     output$ts_multiple <- renderPlotly({
       if(input$neighborhood == "None"){plotly_empty()} else{
       ts_multiple() %>% 
-        plot_ly(., x = ~Date, y = ~Studio, type = "scatter", mode = "lines+markers", name = "Studio") %>% 
-        add_trace(., x = ~Date, y = ~One_Bedroom, type = "scatter", mode = "lines+markers", name = "One Bedroom") %>% 
-        add_trace(., x = ~Date, y = ~Two_Bedrooms, type = "scatter", mode = "lines+markers", name = "Two Bedrooms") %>% 
-        add_trace(., x = ~Date, y = ~Three_Bedrooms, type = "scatter", mode = "lines+markers", name = "Three+ Bedrooms") %>% layout(title = paste("Median Rent in", input$neighborhood, "Across Apartment Types"), hovermode = "x", yaxis = list(title=""))
+        plot_ly(., x = ~Date,
+                y = ~Studio,
+                type = "scatter",
+                mode = "lines+markers",
+                name = "Studio") %>% 
+        add_trace(., x = ~Date,
+                  y = ~One_Bedroom,
+                  type = "scatter",
+                  mode = "lines+markers",
+                  name = "One Bedroom") %>% 
+        add_trace(., x = ~Date,
+                  y = ~Two_Bedrooms,
+                  type = "scatter",
+                  mode = "lines+markers",
+                  name = "Two Bedrooms") %>% 
+        add_trace(., x = ~Date,
+                  y = ~Three_Bedrooms,
+                  type = "scatter",
+                  mode = "lines+markers",
+                  name = "Three+ Bedrooms") %>% 
+          layout(title = paste("Median Rent in", 
+                               input$neighborhood, 
+                               "Across Apartment Types"), 
+                 hovermode = "x", 
+                 yaxis = list(title=""))
         }
       })
     
@@ -270,7 +294,7 @@ server <- function(input, output, session) {
   
     
     
-    #TAB 4#############################################################################################################
+    #TAB 4######################################################################
     #--- DATA SPREADSHEET ---#
     
     output$df <- renderDataTable({ df }, options = list(pageLength = 10))

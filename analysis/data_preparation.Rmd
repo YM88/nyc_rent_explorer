@@ -106,5 +106,14 @@ write_rds(all_data, "../data/all_data.rds", compress = 'gz')
 write_csv(all_data_longer, file = "../data/all_data_longer.csv")
 write_rds(all_data_longer, "../data/all_data_longer.rds", compress = 'gz')
 ```
+# JSON
+```{r}
+r <- GET('http://data.beta.nyc//dataset/0ff93d2d-90ba-457c-9f7e-39e47bf2ac5f/resource/35dd04fb-81b3-479b-a074-a27a37888ce7/download/d085e2f8d0b54d4590b1e7d1f35594c1pediacitiesnycneighborhoods.geojson')
+class(r)
+nyc_neighborhoods <- readOGR(dsn = content(r,'text'), verbose = FALSE, 
+                             encoding = 'UTF-8')
 
+names(nyc_neighborhoods)
+rgdal::writeOGR(nyc_neighborhoods, "../data/ny.geojson", layer="ny", driver="GeoJSON")
+```
 
