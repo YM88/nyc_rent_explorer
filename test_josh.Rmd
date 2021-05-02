@@ -168,11 +168,11 @@ server <- function(input, output, session) {
     # filters data frame for the histogram plot to compare across neighborhoods and types
     hist_filter <- reactive({
       df %>% 
-        filter(Borough %in% c(input$boro_compare, input$boro_compare2)) %>% group_by(Borough, Date) %>% 
-        mutate(StudioM = mean(Studio, na.rm = T),
-               One_BedroomM = mean(One_Bedroom, na.rm = T),
-               Two_BedroomsM = mean(Two_Bedrooms, na.rm = T),
-               Three_BedroomsM = mean(Three_Bedrooms, na.rm = T)) %>% ungroup()
+        filter(Borough %in% c(input$boro_compare, input$boro_compare2), Neighborhood %in% c(input$neighborhood_compare, input$neighborhood_compare2),
+               !is.na(Studio),
+               !is.na(One_Bedroom),
+               !is.na(Two_Bedrooms),
+               !is.na(Three_Bedrooms))
     })
     
     hist_filterBoro <- reactive({
@@ -270,19 +270,19 @@ server <- function(input, output, session) {
         }
       })
     
-    # Here is the histogram plot. It allows for user to compare two boroughs, compare a borough with a neighborhood, compare two neighborhoods. It DOES NOT yet prevent output where there are less than ten data points for either histogram.
+    # Here is the histogram plot. It allows for user to compare two boroughs, compare a borough with a neighborhood, compare two neighborhoods. It DOES NOT yet prevents output where there are less than ten data points for either histogram.
     output$histogram <- renderPlotly({
       if(input$neighborhood_compare == "None" & input$neighborhood_compare2 == "None"){
-        hist_filter() %>% 
+        hist_filterBoro() %>% 
           plot_ly(data = ., alpha = 0.6) %>% 
-          add_histogram(x = ~(hist_filter() %>% filter(Borough == input$boro_compare) %>% distinct(Date, paste(input$type_compare, "M", sep="")) %>% na.omit() %>% pull(paste(input$type_compare, "M", sep=""))), name = paste(input$type_compare, "in", input$boro_compare)) %>% 
-        add_histogram(x = ~(hist_filter() %>% filter(Borough == input$boro_compare2) %>% distinct(Date, paste(input$type_compare2, "M", sep="")) %>% na.omit() %>% pull(paste(input$type_compare2, "M", sep=""))), name = paste(input$type_compare2, "in", input$boro_compare2)) %>% 
+          add_histogram(x = ~(hist_filterBoro() %>% filter(Borough == input$boro_compare) %>% pull(input$type_compare)), name = paste(input$type_compare, "in", input$boro_compare)) %>% 
+        add_histogram(x = ~(hist_filterBoro() %>% filter(Borough == input$boro_compare2) %>% pull(input$type_compare2)), name = paste(input$type_compare2, "in", input$boro_compare2)) %>% 
           layout(title = "Distribution of Rent for Selected Apartment Types in Selected Boroughs", xaxis = list(title="($)"), yaxis = list(title="Count"), barmode = "overlay")
       } else if(input$neighborhood_compare != "None" & input$neighborhood_compare2 == "None"){
         hist_filter() %>% 
           plot_ly(data = ., alpha = 0.6) %>% 
-          add_histogram(x = ~(hist_filter() %>% pull(input$type_compare)), name = paste(input$type_compare, "in", input$neighborhood_compare)) %>% 
-        add_histogram(x = ~(hist_filter() %>% filter(Borough == input$boro_compare2) %>% pull(input$type_compare2)), name = paste(input$type_compare2, "in", input$boro_compare2)) %>% 
+          add_histogram(x = ~(hist_filter() %>% filter(Neighborhood == input$neighborhood_compare) %>% pull(input$type_compare)), name = paste(input$type_compare, "in", input$neighborhood_compare)) %>% 
+        add_histogram(x = ~(hist_filterBoro() %>% filter(Borough == input$boro_compare2) %>% pull(input$type_compare2)), name = paste(input$type_compare2, "in", input$boro_compare2)) %>% 
           layout(title = "Distribution of Rent for Selected Apartment Types in Selected Areas", xaxis = list(title="($)"), yaxis = list(title="Count"), barmode = "overlay")
       } else if(input$neighborhood_compare == "None" & input$neighborhood_compare2 != "None"){
         hist_filter() %>% 
@@ -311,54 +311,7 @@ shinyApp(ui, server)
 
 ```{r}
 # This code chunk is here to test pieces of shiny app like functions, etc. 
- df %>% 
-        filter(Borough == "Manhattan" | Borough == "Bronx") %>% 
-  group_by
-
-(Neighborhood == "None" | Neighborhood == "Belmont") %>% 
-  select(Borough, Neighborhood, Two_Bedrooms, Three_Bedrooms) %>% na.omit() %>% filter(Neighborhood == "Belmont") 
 
 
-
-
-
-hist_filter <- reactive({
-      df %>% 
-        filter(Borough %in% c(input$boro_compare, input$boro_compare2), Neighborhood == input$neighborhood_compare | Neighborhood == input$neighborhood_compare2) %>% 
-        select(Borough, Neighborhood, input$type_compare, input$type_compare2) %>% na.omit()
-    })
-    
-
-      df %>% 
-        filter(Borough %in% c("Manhattan", "Bronx")) %>% group_by(Borough, Date) %>% 
-        mutate(StudioM = mean(Studio, na.rm = T),
-               One_BedroomM = mean(One_Bedroom, na.rm = T),
-               Two_BedroomsM = mean(Two_Bedrooms, na.rm = T),
-               Three_BedroomsM = mean(Three_Bedrooms, na.rm = T)) %>% ungroup() %>% 
-        filter(Borough == "Manhattan") #%>% distinct(Date, StudioM, One_BedroomM) %>% na.omit() %>% pull(paste(input$type_compare, M, sep = ""))
-      
-      df %>% 
-        filter(Borough %in% c("Manhattan", "Bronx")) %>% group_by(Borough, Date) %>% 
-        mutate(StudioM = mean(Studio, na.rm = T),
-               One_BedroomM = mean(One_Bedroom, na.rm = T),
-               Two_BedroomsM = mean(Two_Bedrooms, na.rm = T),
-               Three_BedroomsM = mean(Three_Bedrooms, na.rm = T)) %>% ungroup() %>% 
-        filter(Neighborhood == "Belmont") %>% distinct(Date, Two_Bedrooms) %>% na.omit() %>% pull(Studio)
-      
-      yo <- "Studio"
-      paste(yo, "M", sep = "")
-      
-        filter(Neighborhood == "None" | Neighborhood == "Belmont") %>% 
-          
-cool <- function(){
-  df %>% 
-        filter(Borough %in% c("Manhattan", "Bronx")) %>% group_by(Borough, Date) %>% 
-        mutate(StudioM = mean(Studio, na.rm = T),
-               One_BedroomM = mean(One_Bedroom, na.rm = T),
-               Two_BedroomsM = mean(Two_Bedrooms, na.rm = T),
-               Three_BedroomsM = mean(Three_Bedrooms, na.rm = T)) %>% ungroup() %>% 
-        filter(Borough == "Manhattan") %>% distinct(Date, StudioM, One_BedroomM) %>% na.omit() %>% pull(paste(input$type_compare, M, sep = ""))
-}
-    
 ```
 
