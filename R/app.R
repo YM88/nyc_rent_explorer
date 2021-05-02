@@ -27,11 +27,18 @@ boroughs <- c("Manhattan", "Brooklyn", "Queens", "Bronx")
 ui <- fluidPage(theme = shinytheme("cosmo"),
                 tags$head(
                   tags$style(HTML("
+                  @import url('https://fonts.googleapis.com/css2?family=Bitter:ital,wght@1,500&family=Nunito&display=swap');
+                  * {
+                      font-family: 'Nunito', sans-serif;
+                    }
                     .shiny-output-error-black {
                       color: black;
                       font-size: 200%;
                       display: flex;
                       align-items: center;
+                    }
+                    h1 {
+                      font-family: 'Bitter', serif;
                     }
                   "), HTML(
                     "#sidebar {
