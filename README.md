@@ -85,9 +85,10 @@ Here's a blank template to get started:
 
 ### Data
 
-* []()
-* []()
-* []()
+All rental data is collected from [StreetEasy.com](https://streeteasy.com/blog/download-data/), an online real estate and apartment marketplace compnay excllusively for New York City homes and apartments. The data from StreetEasy includes has the following variables: Borough, Neighborhood, Date (every month), and the median rent for studio, one bedroom, two bedroom, and three+ bedroom apartments. 
+
+The boundary data for NYC to create the leaflet map come from [data.beta.nyc](https://data.beta.nyc/).
+
 
 ### Use Case
 text here 
