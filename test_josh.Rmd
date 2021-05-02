@@ -263,7 +263,7 @@ server <- function(input, output, session) {
         }
       })
     
-    # Here is the histogram plot. It allows for user to compare two boroughs, compare a borough with a neighborhood, compare two neighborhoods. It also prevents output where there are less than ten data points for either histogram.
+    # Here is the histogram plot. It allows for user to compare two boroughs, compare a borough with a neighborhood, compare two neighborhoods. It also prevents output where there are less than ten data points for either histogram. Any ideas on how to shorten this code are welcome.
     output$histogram <- renderPlotly({
       if(input$neighborhood_compare == "None" & input$neighborhood_compare2 == "None"){
         hist_filterBoro() %>% 
