@@ -37,7 +37,10 @@ ui <- fluidPage(theme = shinytheme("cosmo"),
                       display: flex;
                       align-items: center;
                     }
-                  "))
+                  "), HTML(
+                    "#sidebar {
+                      background-color: #ffffff;}"
+                  ))
                 ),
                 # App title
                 navbarPage("RENT DATA FOR NEW YORK CITY", collapsible = TRUE,
@@ -45,8 +48,9 @@ ui <- fluidPage(theme = shinytheme("cosmo"),
                            ###TAB 1#############################################
                            tabPanel("Map and Time Series Analysis",
                            ###ROW 1#############################################
-                           fluidRow(
-                                column(3,
+                           sidebarLayout(
+                                sidebarPanel(#3,
+                                  id="sidebar",
                                   selectInput("boro", "Select a borough:", 
                                               choices = boroughs, 
                                               selected = "Manhattan"),
@@ -55,23 +59,38 @@ ui <- fluidPage(theme = shinytheme("cosmo"),
                                   
                                   selectInput("type", "Select an apartment type:", 
                                               choices = apartment_types, 
-                                              selected = "Studio")
+                                              selected = "Studio"),
+                                  
+                                  h1("Welcome to the NYC Rent Data Explorer!"), 
+                                  p("This web application is designed for the benefit of renters, landlords, and multifamily market researchers in New York City with up to date and useful analysis of rental market data and trends."),
+                                  p("The rent data comes from", a(href = "https://streeteasy.com/blog/download-data/", "StreetEasy.com,"), "an online real estate and apartment marketplace compnay exclusively for New York City homes and apartments."), 
+                                  p("This web application is proudly made by", a(href = "https://www.linkedin.com/in/jvosteen/", "Josh Vera O'Steen", .noWS=c("after")),",", a(href = "https://www.linkedin.com/in/yasharmansouri/", "Yashar Mansouri", .noWS=c("after")), ", and", a(href = "https://www.linkedin.com/in/christopher-hoffmann/", "Christopher Hoffman", .noWS=c("after")),". For contact information and further details on this project, please refer to the README and Vignette files found in our",
+                                    a(href = "https://github.com/STAT-413-613-21S/fp_final-project-cjy", "GitHub repository", .noWS=c("after")), "."),
+                                  p("To start using this application, select the tab of interest and the inputs. Enjoy exploring!"),
+                                  align = "center"
                                   ),
-                                column(9,
+                                mainPanel(#9,
                                   # MAP OUTPUT
-                                  leafletOutput("mapPlot")
+                                  leafletOutput("mapPlot"),
+                                  plotlyOutput("ts_single")
                                   ),
                                   
                                 ),
                            ###ROW 2#############################################
-                           fluidRow(
-                               column(3
-                                  ),
-                               column(9,
-                                  plotlyOutput("ts_single")
-                                  ),
-                                  
-                               )
+                           # sidebarLayout(
+                           #     sidebarPanel(#3,
+                           #            # h1("Welcome to the NYC Rent Data Explorer!"), 
+                           #            # p("This web application is designed for the benefit of renters, landlords, and multifamily market researchers in New York City with up to date and useful analysis of rental market data and trends."),
+                           #            # p("The rent data comes from", a(href = "https://streeteasy.com/blog/download-data/", "StreetEasy.com,"), "an online real estate and apartment marketplace compnay exclusively for New York City homes and apartments."), 
+                           #            # p("This web application is designed for the benefit of renters, landlords, and multifamily market researchers in New York City with up to date and useful analysis of rental market data and trends."),
+                           #            # p("This web application is designed for the benefit of renters, landlords, and multifamily market researchers in New York City with up to date and useful analysis of rental market data and trends."),
+                           #            # align = "center"
+                           #        ),
+                           #     mainPanel(#9,
+                           #        plotlyOutput("ts_single")
+                           #        )
+                           #        
+                           #     )
                               ),
                            
                            ###TAB 2#############################################
