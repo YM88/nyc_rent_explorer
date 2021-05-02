@@ -275,12 +275,12 @@ server <- function(input, output, session) {
         hist_filter() %>% 
           plot_ly(data = ., alpha = 0.6) %>% 
           add_histogram(x = ~(hist_filter() %>% filter(Neighborhood == input$neighborhood_compare) %>% pull(input$type_compare) %>% na.omit()), name = paste(input$type_compare, "in", input$neighborhood_compare)) %>% 
-        add_histogram(x = ~(hist_filterBoro() %>% filter(Borough == input$boro_compare2) %>% pull(input$type_compare2)), name = paste(input$type_compare2, "in", input$boro_compare2)) %>% 
+        add_histogram(x = ~(hist_filterBoro() %>% filter(Borough == input$boro_compare2) %>% pull(input$type_compare2) %>% na.omit()), name = paste(input$type_compare2, "in", input$boro_compare2)) %>% 
           layout(title = "Distribution of Rent for Selected Apartment Types in Selected Areas", xaxis = list(title="($)"), yaxis = list(title="Count"), barmode = "overlay")
       } else if(input$neighborhood_compare == "None" & input$neighborhood_compare2 != "None"){
         hist_filter() %>% 
           plot_ly(data = ., alpha = 0.6) %>% 
-          add_histogram(x = ~(hist_filterBoro() %>% filter(Borough == input$boro_compare) %>% pull(input$type_compare)), name = paste(input$type_compare, "in", input$boro_compare)) %>% 
+          add_histogram(x = ~(hist_filterBoro() %>% filter(Borough == input$boro_compare) %>% pull(input$type_compare)%>% na.omit()), name = paste(input$type_compare, "in", input$boro_compare)) %>% 
         add_histogram(x = ~(hist_filter() %>% filter(Neighborhood == input$neighborhood_compare2) %>% pull(input$type_compare2) %>% na.omit()), name = paste(input$type_compare2, "in", input$neighborhood_compare2)) %>% 
           layout(title = "Distribution of Rent for Selected Apartment Types in Selected Areas", xaxis = list(title="($)"), yaxis = list(title="Count"), barmode = "overlay")
       } else{
@@ -305,12 +305,6 @@ shinyApp(ui, server)
 ```{r}
 # This code chunk is here to test pieces of shiny app like functions, etc. 
 
-plot_ly(alpha = 0.6) %>% 
-  add_histogram(x = ~(df %>% filter(Neighborhood == "") %>% pull(input$type_compare)), name = paste(input$type_compare, "in", input$neighborhood_compare))
 
-
-
-df %>% 
-  filter(Borough %in% c("Manhattan", "Bronx")) %>% group_by(Borough, Date) %>% summarize(Studio = mean(Studio, na.rm = T),One_Bedroom = mean(One_Bedroom, na.rm = T),Two_Bedrooms = mean(Two_Bedrooms, na.rm = T),Three_Bedrooms = mean(Three_Bedrooms, na.rm = T)) %>% distinct(Studio) %>% filter(Borough == "Manhattan")
 ```
 
