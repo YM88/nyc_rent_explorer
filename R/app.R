@@ -2,15 +2,11 @@
 # Authors: Yashar Mansouri, Joshua O'Steen, Christopher Hoffman
 
 library(shiny)
-library(ggplot2)
 library(tidyverse)
-library(broom)
-library(httr)
 library(rgdal)
 library(leaflet)
 library(plotly)
 library(shinythemes)
-library(lubridate)
 library(prophet)
 library(dygraphs)
 
@@ -241,13 +237,12 @@ server <- function(input, output, session) {
   # filters data frame for time series plot with single apt type (ts_single)
   ts_single <- reactive({
     df_longer %>% 
-      filter(Borough == input$boro, Neighborhood == input$neighborhood,
-             !is.na(Median_Rent))
+      filter(Borough == input$boro, Neighborhood == input$neighborhood)
   })
   
   ts_singleBoro <- reactive({
     df_longer %>% 
-      filter(Borough == input$boro, !is.na(Median_Rent)) %>% 
+      filter(Borough == input$boro) %>% 
       group_by(Date) %>% 
       summarize(Med_RentBoro = mean(Median_Rent))
   })
