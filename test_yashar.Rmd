@@ -9,14 +9,24 @@ output: html_document
 library(shiny)
 library(ggplot2)
 library(tidyverse)
+library(lubridate)
 library(broom)
+library(httr)
+library(rgdal)
+library(leaflet)
+library(plotly)
+library(prophet)
+library(dygraphs)
+library(shinythemes)
 
-df <- read_rds("./data/all_data.rds")
+df <- read_rds("data/all_data.rds")
+r <- GET('http://data.beta.nyc//dataset/0ff93d2d-90ba-457c-9f7e-39e47bf2ac5f/resource/35dd04fb-81b3-479b-a074-a27a37888ce7/download/d085e2f8d0b54d4590b1e7d1f35594c1pediacitiesnycneighborhoods.geojson')
+nyc_neighborhoods <- readOGR(dsn = content(r,'text'), verbose = F)
+df_longer <- pivot_longer(df, cols = 4:7, names_to = "Type", values_to = "Median_Rent") %>% filter(!is.na(Median_Rent)) # New pivoted longer version of df. It's so that we can work with plots in more efficient way. Attempted to just do this in a reactive function, but it doesn't work. 
 
-ui <- fluidPage(
+ui <- fluidPage(theme = shinytheme("cosmo"),
     # App title
-    titlePanel("Financial Housing Data of New York City"),
-    tabsetPanel(
+    navbarPage("RENT DATA FOR NEW YORK CITY", collapsible = TRUE,
         
         # tab 1 - map and time series
         # perhaps we can structure this section so that there are three 
@@ -25,13 +35,27 @@ ui <- fluidPage(
         tabPanel("Map and Time Series Analysis",
                  sidebarLayout(
                      sidebarPanel(
-                         # user input
-                     ),
+                       # USER INPUT
+                       selectInput("boro", "Select a borough:", 
+                                   choices = c("Manhattan", "Brooklyn", "Queens", "Bronx"), selected = "Manhattan"),
+                       
+                       uiOutput("areaSelect"), # This is needed to update the option based on the selected input above.
+                       
+                       selectInput("type", "Select an apartment type:", 
+                                   choices = c("Studio", 
+                                               "One Bedroom" = "One_Bedroom", 
+                                               "Two Bedrooms" = "Two_Bedrooms", 
+                                               "Three+ Bedrooms" = "Three_Bedrooms"), 
+                                   selected = "Studio")),
                      mainPanel(
-                         # map
+                       # MAP OUTPUT
+                       leafletOutput("mapPlot"),
+                       
+                       # PLOT OUTPUT
+                       plotlyOutput("ts_single")
                      )
-                 )),
-        
+                  )),
+
         # tab 2 - various plots of data
         tabPanel("Data Distributions and Plots",
                  sidebarLayout(
@@ -40,26 +64,327 @@ ui <- fluidPage(
                      ),
                      mainPanel(
                          # chart output
+                       plotlyOutput("ts_multiple")
                      )
                  )),
         
+            # tab 3 - Time Series Forecast
+    tabPanel(
+            "Time Series Forecast",
+            ####################Second Row######################################
+            fluidRow(
+                column(4,
+                       selectInput("boro_forecast", "Select a borough:", 
+                                   choices = c("Manhattan", 
+                                               "Brooklyn", 
+                                               "Queens", 
+                                               "Bronx"), 
+                                selected = "Manhattan"),
+
+                       uiOutput("areaSelect_forecast"), 
+                       
+                       selectInput("type_forecast", "Select an apartment type:", 
+                                   choices = c("Studio", 
+                                               "One Bedroom" = "One_Bedroom", 
+                                               "Two Bedrooms" = "Two_Bedrooms", 
+                                               "Three+ Bedrooms" = "Three_Bedrooms"), 
+                                   selected = "Studio"),
+                       hr(),
+                       sliderInput("years_to_forecast",
+                                   label = "How many years to forecast:",
+                                  min = 1, 
+                                  max = 10, 
+                                  value = 5),
+                       actionButton("run_forecast", label = "Forecast")
+                ),
+                column(6,
+                       dygraphOutput("plot_forecast"))
+            ),
+            ####################Second Row######################################
+            fluidRow(
+                column(4,
+                       verbatimTextOutput("text_prophet")),
+                # column(3,
+                #        plotOutput("plot_ols_rf")),
+                # column(3,
+                #        plotOutput("plot_ols_qq"))
+            )
+        ),
+        
         # tab 4 - data spreadsheet
         tabPanel("Data Spreadsheet",
-                 mainPanel(dataTableOutput("df")))
+                  dataTableOutput("df")
+      )
     )
 )
 
 server <- function(input, output, session) {
   
+    
+    #TAB 1######################################################################
+    #--- REACTIVE FUNCTIONS ---#
   
-  ############################################ Spreadsheet
+    # locations available by Borough, Neighborhood, longitude and latitude
+    areaList = reactive({
+        df %>%
+            select(Borough, Neighborhood, Longitude, Latitude) %>%
+            distinct() %>%
+            inner_join(nyc_neighborhoods@data$neighborhood %>% 
+                         as.data.frame() %>% 
+                         distinct() %>% 
+                         rename("Neighborhood" = "."), by = "Neighborhood") %>% 
+            filter(!is.na(Latitude), !is.na(Longitude))
+    })
+    
+    # filters data frame for time series plot with single apt type (ts_single)
+    ts_single <- reactive({
+      df_longer %>% 
+        filter(Borough == input$boro, 
+               Neighborhood == input$neighborhood,
+               !is.na(Median_Rent))
+    })
+    
+    # filters data frame for time series plot with multiple apt types (ts_multiple)
+    ts_multiple <- reactive({
+      df %>% 
+        filter(Borough == input$boro, 
+               Neighborhood == input$neighborhood,
+               !is.na(Studio),
+               !is.na(One_Bedroom),
+               !is.na(Two_Bedrooms),
+               !is.na(Three_Bedrooms))
+    })
+    
+    #--- HELPER FUNCTIONS ---#
+    
+    # grabs coordinates for map
+    getCoordinates <- function(area) {
+        areaList() %>% 
+            filter(Neighborhood == area) %>% 
+            select(Longitude, Latitude)
+    }
+
+    #--- PLOTS ---#
+    
+    # render the neighborhood selector input
+    output$areaSelect = renderUI({
+        selectInput("neighborhood", "Select a neighborhood:",
+                    choices = c("None", areaList() %>% filter(Borough == input$boro) %>% select(Neighborhood) %>% pull()),
+                    selected = "None")
+    })
+    
+    # render the leaflet plot for showing the location of the selected neighborhood
+    output$mapPlot = renderLeaflet({
+        if (input$neighborhood == "None") {
+            leaflet(height = "380px") %>%
+                addTiles() %>%
+                setView(-73.87, 40.73, zoom = 10)
+        } else {
+            nyc_neighborhoods[nyc_neighborhoods@data$neighborhood == input$neighborhood,] %>%
+                leaflet(height = "380px") %>%
+                addTiles() %>%
+                setView(getCoordinates(input$neighborhood)$Longitude, 
+                        getCoordinates(input$neighborhood)$Latitude, 
+                        zoom = 13) %>%
+                addPolygons(popup = ~neighborhood,
+                            weight = 1,
+                            fillColor = "Green", fillOpacity = 0.35)
+        }
+    })
+    
+    # render the time series plot (based on neighborhood and apartment type)
+    output$ts_single <- renderPlotly({
+      if(input$neighborhood == "None"){plotly_empty()} else{
+      ts_single() %>% 
+        filter(Type == input$type) %>% 
+        plot_ly(., x = ~Date, y = ~Median_Rent, type = "scatter", mode = "lines+markers")
+      }
+    })
+    
+    output$ts_multiple <- renderPlotly({
+      if(input$neighborhood == "None"){plotly_empty()} else{
+      ts_multiple() %>% 
+        plot_ly(., x = ~Date, y = ~Studio, type = "scatter", mode = "lines+markers", name = "Studio") %>% 
+        add_trace(., x = ~Date, y = ~One_Bedroom, type = "scatter", mode = "lines+markers", name = "One Bedroom") %>% 
+        add_trace(., x = ~Date, y = ~Two_Bedrooms, type = "scatter", mode = "lines+markers", name = "Two Bedrooms") %>% 
+        add_trace(., x = ~Date, y = ~Three_Bedrooms, type = "scatter", mode = "lines+markers", name = "Three+ Bedrooms") %>% layout(title = paste("Median Rent in", input$neighborhood, "Across Apartment Types"), hovermode = "x", yaxis = list(title=""))
+        }
+      })
+    
+    #TAB 3#######################################################################
+    #--- TIME SERIES FORECAST ---#
+    # Choosing variables per user input
+    output$areaSelect_forecast <- renderUI({
+        selectInput("neighborhood_forecast", "Select a neighborhood:",
+                    choices = c(
+                      df %>%
+                        filter(Borough == input$boro_forecast) %>%
+                        select(Neighborhood) %>% 
+                        distinct() %>% 
+                        pull()))
+    })
+    
+    # preparing prophet ready time series dataframe
+    df_ts <- reactive({
+      req(input$boro_forecast,
+          input$neighborhood_forecast,
+          input$type_forecast
+          )
+      
+      df %>%
+        filter(Borough == input$boro_forecast &
+        Neighborhood == input$neighborhood_forecast) %>%  
+        select(ds='Date', y=input$type_forecast)
+      
+    })
+    
+    # running prophet after action button
+    m <- eventReactive(input$run_forecast, {
+      req(df_ts())
+      prophet(df_ts(),
+              changepoint.prior.scale = 0.01, 
+              seasonality.mode = 'multiplicative', 
+              mcmc.samples = 50)
+  })
+    
+    # creating future to forecast dataframe 
+    future <- reactive({
+      req(m(), input$years_to_forecast)
+      make_future_dataframe(m(),
+                            periods=input$years_to_forecast*12, 
+                            freq = 'month')
+    })
+    
+    # forecast
+    forecast <- reactive({
+      req(m(), future())
+      forecast <- predict(m(), future())
+    })
+
+    
+  output$plot_forecast <- renderDygraph({
+    req(input$run_forecast, m(), forecast())
+    dyplot.prophet(m(), forecast())
+  })
   
-  output$df <- renderDataTable({df})
   
+    
+    
+    #TAB 4#############################################################################################################
+    #--- DATA SPREADSHEET ---#
+    
+    output$df <- renderDataTable({ df }, options = list(pageLength = 10))
   
 }
 
 shinyApp(ui, server)
 ```
 
+```{r}
+
+```
+
+
+
+```{r fig.width=7}
+
+df %>% 
+  filter(Neighborhood=='Battery Park City' & Borough== 'Manhattan') %>% # 2 input variables here
+  select('Date', 'Studio') %>% # 1 input variable here
+  ggplot(aes(x=Date, y=Studio)) + # same input variable as above
+  geom_line() +
+  theme_bw()
+
+```
+```{r}
+df %>% 
+  filter(Neighborhood=='Battery Park City' & Borough== 'Manhattan') %>% # 2 input variables here
+  select('Date', 'Studio') ->
+
+
+# %>% 
+#   filter(year(Date) >= 2013) -> df_ts
+
+df_ts
+
+train_ts = ts(df_ts[,2], frequency = 12)
+```
+
+
+```{r}
+library(TTR)
+```
+```{r fig.width=12}
+plot(decompose(train_ts))
+```
+
+
+```{r}
+library(prophet)
+```
+```{r}
+names(df_ts) <- c('ds', 'y')
+
+```
+```{r}
+
+```
+
+```{r}
+m <- prophet(df_ts, changepoint.prior.scale = 0.01, seasonality.mode = 'multiplicative', mcmc.samples = 50, control = list(max_treedepth = 15))
+future <- make_future_dataframe(m, periods=60, freq = 'month')
+forecast <- predict(m, future)
+plot(m, forecast)
+dyplot.prophet(m, forecast)
+```
+
+```{r}
+prophet_plot_components(m, forecast)
+```
+```{r}
+df.cv <- cross_validation(m, initial=180, period=60, horizon=120, units='days')
+tail(df.cv)
+
+plot_cross_validation_metric(df.cv, metric = 'mape')
+```
+```{r}
+
+prophet_model <- eventReactive(input$plot_btn2,{
+    
+    req(dat(), 
+        # ("ds" %in% dat()), "y" %in% names(dat()),
+        input$n.changepoints,
+        input$seasonality_scale, input$changepoint_scale,
+        input$holidays_scale, input$mcmc.samples,
+        input$mcmc.samples, input$interval.width,
+        input$uncertainty.samples)
+    
+    if(input$growth == "logistic"){
+      validate(
+        need(try("cap" %in% names(dat())),
+             "Error: for logistic 'growth', the input dataframe must have a column 'cap' that specifies the capacity at each 'ds'."))
+      
+    }
+    
+    datx <- dat() %>% 
+      mutate(y = log(y))
+    
+    kk <- prophet(datx,
+                  growth = input$growth,
+                  changepoints = NULL,
+                  n.changepoints = input$n.changepoints,
+                  yearly.seasonality = input$yearly,
+                  weekly.seasonality = input$monthly,
+                  holidays = holidays_upload(),
+                  seasonality.prior.scale = input$seasonality_scale,
+                  changepoint.prior.scale = input$changepoint_scale,
+                  holidays.prior.scale = input$holidays_scale,
+                  mcmc.samples = input$mcmc.samples,
+                  interval.width = input$interval.width,
+                  uncertainty.samples = input$uncertainty.samples,
+                  fit = T)
+    
+    return(kk)
+  })
+```
 
