@@ -266,30 +266,26 @@ server <- function(input, output, session) {
     # Here is the histogram plot. It allows for user to compare two boroughs, compare a borough with a neighborhood, compare two neighborhoods. It also prevents output where there are less than ten data points for either histogram. Any ideas on how to shorten this code are welcome.
     output$histogram <- renderPlotly({
       if(input$neighborhood_compare == "None" & input$neighborhood_compare2 == "None"){
-        hist_filterBoro() %>% 
-          plot_ly(data = ., alpha = 0.6) %>% 
+         plot_ly(alpha = 0.6) %>% 
           add_histogram(x = ~(hist_filterBoro() %>% filter(Borough == input$boro_compare) %>% pull(input$type_compare) %>% na.omit()), name = paste(input$type_compare, "in", input$boro_compare)) %>% 
-        add_histogram(x = ~(hist_filterBoro() %>% filter(Borough == input$boro_compare2) %>% pull(input$type_compare2) %>% na.omit()), name = paste(input$type_compare2, "in", input$boro_compare2)) %>% 
+          add_histogram(x = ~(hist_filterBoro() %>% filter(Borough == input$boro_compare2) %>% pull(input$type_compare2) %>% na.omit()), name = paste(input$type_compare2, "in", input$boro_compare2)) %>% 
           layout(title = "Distribution of Rent for Selected Apartment Types in Selected Boroughs", xaxis = list(title="($)"), yaxis = list(title="Count"), barmode = "overlay")
       } else if((input$neighborhood_compare != "None" & hist_filter() %>% filter(Neighborhood == input$neighborhood_compare) %>% select(input$type_compare) %>% na.omit() %>% nrow() < 10) | (input$neighborhood_compare2 != "None" & hist_filter() %>% filter(Neighborhood == input$neighborhood_compare2) %>% select(input$type_compare2) %>% na.omit() %>% nrow() < 10)){
         validate("We apologize, but there is not enough data to produce an informative plot. Please select a different combination of inputs.", errorClass = "black")
       } else if(input$neighborhood_compare != "None" & input$neighborhood_compare2 == "None"){
-        hist_filter() %>% 
-          plot_ly(data = ., alpha = 0.6) %>% 
+        plot_ly(alpha = 0.6) %>% 
           add_histogram(x = ~(hist_filter() %>% filter(Neighborhood == input$neighborhood_compare) %>% pull(input$type_compare) %>% na.omit()), name = paste(input$type_compare, "in", input$neighborhood_compare)) %>% 
         add_histogram(x = ~(hist_filterBoro() %>% filter(Borough == input$boro_compare2) %>% pull(input$type_compare2) %>% na.omit()), name = paste(input$type_compare2, "in", input$boro_compare2)) %>% 
           layout(title = "Distribution of Rent for Selected Apartment Types in Selected Areas", xaxis = list(title="($)"), yaxis = list(title="Count"), barmode = "overlay")
       } else if(input$neighborhood_compare == "None" & input$neighborhood_compare2 != "None"){
-        hist_filter() %>% 
-          plot_ly(data = ., alpha = 0.6) %>% 
+        plot_ly(alpha = 0.6) %>% 
           add_histogram(x = ~(hist_filterBoro() %>% filter(Borough == input$boro_compare) %>% pull(input$type_compare)%>% na.omit()), name = paste(input$type_compare, "in", input$boro_compare)) %>% 
-        add_histogram(x = ~(hist_filter() %>% filter(Neighborhood == input$neighborhood_compare2) %>% pull(input$type_compare2) %>% na.omit()), name = paste(input$type_compare2, "in", input$neighborhood_compare2)) %>% 
+          add_histogram(x = ~(hist_filter() %>% filter(Neighborhood == input$neighborhood_compare2) %>% pull(input$type_compare2) %>% na.omit()), name = paste(input$type_compare2, "in", input$neighborhood_compare2)) %>% 
           layout(title = "Distribution of Rent for Selected Apartment Types in Selected Areas", xaxis = list(title="($)"), yaxis = list(title="Count"), barmode = "overlay")
       } else{
-      hist_filter() %>%
         plot_ly(data = ., alpha = 0.6) %>%
-        add_histogram(x = ~(hist_filter() %>% filter(Neighborhood == input$neighborhood_compare) %>% pull(input$type_compare) %>% na.omit()), name = paste(input$type_compare, "in", input$neighborhood_compare)) %>% 
-        add_histogram(x = ~(hist_filter() %>% filter(Neighborhood == input$neighborhood_compare2) %>% pull(input$type_compare2) %>% na.omit()), name = paste(input$type_compare2, "in", input$neighborhood_compare2)) %>% 
+          add_histogram(x = ~(hist_filter() %>% filter(Neighborhood == input$neighborhood_compare) %>% pull(input$type_compare) %>% na.omit()), name = paste(input$type_compare, "in", input$neighborhood_compare)) %>% 
+          add_histogram(x = ~(hist_filter() %>% filter(Neighborhood == input$neighborhood_compare2) %>% pull(input$type_compare2) %>% na.omit()), name = paste(input$type_compare2, "in", input$neighborhood_compare2)) %>% 
         layout(title = "Distribution of Rent for Selected Apartment Types in Selected Neighborhoods", xaxis = list(title="($)"), yaxis = list(title="Count"), barmode = "overlay")
       }
     })
@@ -307,6 +303,6 @@ shinyApp(ui, server)
 ```{r}
 # This code chunk is here to test pieces of shiny app like functions, etc. 
 
-
+plot_ly(alpha = 0.6) %>% add_histogram(x=~df$Studio)
 ```
 
