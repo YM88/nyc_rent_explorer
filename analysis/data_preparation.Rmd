@@ -91,8 +91,20 @@ all_data <- medRent_Studio %>%
 
 
 ```{r}
-# Write csv and rds file
-write_csv(all_data, file = "../data/all_data.csv")
-
-write_rds(all_data, "../data/all_data.rds", compress = 'gz')
+all_data_longer <- pivot_longer(all_data, cols = 4:7, names_to = "Type", values_to = "Median_Rent") %>% 
+  filter(!is.na(Median_Rent))
 ```
+
+
+# Creating csv and ds files
+```{r}
+# Writing all_data
+write_csv(all_data, file = "../data/all_data.csv")
+write_rds(all_data, "../data/all_data.rds", compress = 'gz')
+
+# Writing all_data_longer
+write_csv(all_data_longer, file = "../data/all_data_longer.csv")
+write_rds(all_data_longer, "../data/all_data_longer.rds", compress = 'gz')
+```
+
+

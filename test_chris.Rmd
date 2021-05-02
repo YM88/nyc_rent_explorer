@@ -9,7 +9,6 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
 ```{r}
 library(shiny)
 library(ggplot2)
@@ -18,71 +17,92 @@ library(broom)
 library(httr)
 library(rgdal)
 library(leaflet)
+library(plotly)
+library(shinythemes)
 
+# getting data
 df <- read_rds("data/all_data.rds")
+df_longer <- read_rds("data/all_data_longer.rds")
+
 r <- GET('http://data.beta.nyc//dataset/0ff93d2d-90ba-457c-9f7e-39e47bf2ac5f/resource/35dd04fb-81b3-479b-a074-a27a37888ce7/download/d085e2f8d0b54d4590b1e7d1f35594c1pediacitiesnycneighborhoods.geojson')
 nyc_neighborhoods <- readOGR(dsn = content(r,'text'), verbose = F)
 
 
-ui <- fluidPage(
+ui <- fluidPage(theme = shinytheme("cosmo"),
+                tags$head(
+                  tags$style(HTML("
+                    .shiny-output-error-black {
+                      color: black;
+                      font-size: 200%;
+                      display: flex;
+                      align-items: center;
+                    }"
+                    )
+                  )
+                ),
     # App title
-    titlePanel("Rent Data of New York City"),
-    tabsetPanel(
+    navbarPage("RENT DATA FOR NEW YORK CITY", collapsable = TRUE,
         
         # tab 1 - map and time series
         # perhaps we can structure this section so that there are three 
         # blocks, upper left, upper right and bottom which hold user input
         # map and time series respectively
-        tabPanel("Map and Time Series Analysis",
-                 sidebarLayout(
-                     sidebarPanel(
-                       # USER INPUT
-                       selectInput("boro", "Select a borough:", 
-                                   choices = c("Manhattan", "Brooklyn", "Queens", "Bronx"), selected = "Manhattan"),
-                       
-                       uiOutput("areaSelect"), # This is needed to update the option based on the selected input above.
-                       
-                       selectInput("type", "Select an apartment type:", 
-                                   choices = c("Studio", 
-                                               "One Bedroom" = "One_Bedroom", 
-                                               "Two Bedrooms" = "Two_Bedroom", 
-                                               "Three+ Bedrooms" = "Three_Bedrooms"), 
-                                   selected = "Studio")),
-                     mainPanel(
-                       # MAP OUTPUT
-                       leafletOutput("mapPlot"),
-                       
-                       # PLOT OUTPUT
-                       plotOutput("ts_plot")
-                     )
-                  )),
+        tabPanel("Map and Time Series Analysis", 
+                 # first row
+                 fluidRow(
+                   column(4,
+                          selectInput("boro", "Select a borough:", 
+                                      choices = c("Manhattan", "Brooklyn", "Queens", "Bronx"), 
+                                      selected = "Manhattan"),
+                          
+                          uiOutput("areaSelect"),
+                          
+                          selectInput("type", "Select an apartment type:",
+                                        choices = c("Studio",
+                                                    "One Bedroom" = "One_Bedroom", 
+                                                    "Two Bedrooms" = "Two_Bedrooms",
+                                                    "Three+ Bedrooms" = "Three_Bedrooms"),
+                                        selected = "Studio"), align = "center"),
+                   column(8,fluidRow(leafletOutput("mapPlot")))), # MAP PLOT
+                 
+                 # second row
+                 fluidRow(
+                   column(4,
+                          h1("Title"), 
+                          p("Here is some text"), 
+                          align = "center"),
+                   column(8, fluidRow(plotlyOutput("ts_single")))) # PLOT OUTPUT
+        ),
 
         # tab 2 - various plots of data
-        tabPanel("Data Distributions and Plots",
-                 sidebarLayout(
-                     sidebarPanel(
-                         # user input
-                     ),
-                     mainPanel(
-                         # chart output
-                     )
-                 )),
+        tabPanel("Data Distributions and Plots", 
+                 fluidRow(
+                   column(4,
+                          selectInput("boro_two", "Select a borough:", 
+                                      choices = c("Manhattan", "Brooklyn", "Queens", "Bronx"), 
+                                      selected = "Manhattan"),
+                          
+                          uiOutput("areaSelect_two")),
+                   
+                   column(8, plotlyOutput("ts_multiple"))
+                 )
+        ),
         
-            # tab 3 - Regression and ANOVA
-    tabPanel("Statistical Analysis",
-             sidebarLayout(
-               sidebarPanel(
-                 # user input
-               ),
-               mainPanel(
-                 # chart output
-               )
-             )),
+        # tab 3 - Regression and ANOVA
+        tabPanel("Statistical Analysis",
+                 
+                 sidebarLayout(
+                   sidebarPanel(
+                     # user input
+                   ),
+                   mainPanel(
+                     # chart output
+                   )
+                 )
+        ),
         
         # tab 4 - data spreadsheet
-        tabPanel("Data Spreadsheet",
-                  dataTableOutput("df")
-      )
+        tabPanel("Data Spreadsheet", dataTableOutput("df"))
     )
 )
 
@@ -90,24 +110,40 @@ server <- function(input, output, session) {
   
     #--- REACTIVE FUNCTIONS ---#
   
-    ## locations available by Borough, Neighborhood, longitude and latitude
+    # locations available by Borough, Neighborhood, longitude and latitude
     areaList = reactive({
         df %>%
             select(Borough, Neighborhood, Longitude, Latitude) %>%
             distinct() %>%
-            inner_join(nyc_neighborhoods@data$neighborhood %>% as.data.frame() %>% distinct() %>% rename("Neighborhood" = "."), by = "Neighborhood") %>% 
+            inner_join(nyc_neighborhoods@data$neighborhood %>% as.data.frame() %>% 
+                         distinct() %>% rename("Neighborhood" = "."), by = "Neighborhood") %>% 
             filter(!is.na(Latitude), !is.na(Longitude))
     })
     
-    ## filters data frame for time series plot (ts_plot)
-    ts_input <- reactive({
-      df %>% filter(Borough == input$boro & Neighborhood == input$neighborhood)
-        
+    # filters data frame for time series plot with single apt type (ts_single)
+    ts_single <- reactive({
+      df_longer %>% 
+        filter(Borough == input$boro, Neighborhood == input$neighborhood,
+               !is.na(Median_Rent))
+    })
+    ts_singleBoro <- reactive({
+      df_longer %>% 
+        filter(Borough == input$boro, !is.na(Median_Rent)) %>% group_by(Date) %>% summarize(Med_RentBoro = median(Median_Rent))
+    })
+    
+    # filters data frame for time series plot with multiple apt types (ts_multiple)
+    ts_multiple <- reactive({
+      df %>% 
+        filter(Borough == input$boro_two, Neighborhood == input$neighborhood_two,
+               !is.na(Studio),
+               !is.na(One_Bedroom),
+               !is.na(Two_Bedrooms),
+               !is.na(Three_Bedrooms))
     })
     
     #--- HELPER FUNCTIONS ---#
     
-    ## grabs coordinates for map
+    # grabs coordinates for map
     getCoordinates <- function(area) {
         areaList() %>% 
             filter(Neighborhood == area) %>% 
@@ -116,10 +152,17 @@ server <- function(input, output, session) {
 
     #--- PLOTS ---#
     
-    ## render the neighborhood selector input
+    # render the neighborhood selector input
     output$areaSelect = renderUI({
         selectInput("neighborhood", "Select a neighborhood:",
                     choices = c("None", areaList() %>% filter(Borough == input$boro) %>% select(Neighborhood) %>% pull()),
+                    selected = "None")
+    })
+    
+    # render the neighborhood selector input - tab 2fts
+    output$areaSelect_two = renderUI({
+        selectInput("neighborhood_two", "Select a neighborhood:",
+                    choices = c("None", areaList() %>% filter(Borough == input$boro_two) %>% select(Neighborhood) %>% pull()),
                     selected = "None")
     })
     
@@ -138,20 +181,34 @@ server <- function(input, output, session) {
                         zoom = 13) %>%
                 addPolygons(popup = ~neighborhood,
                             weight = 1,
-                            fillColor = "Green", fillOpacity = 0.35)
+                            fillColor = "Blue", fillOpacity = 0.35)
         }
     })
     
-    # render the time series plot (based on neighborhood and apartment type)
-    output$ts_plot <- renderPlot({
-      
-      ggplot(ts_input(), aes_string(x = "Date", y = input$type)) +
-        geom_line() +
-        geom_smooth( method = "lm", se = FALSE, color = "red") +
-        scale_x_date(breaks = scales::pretty_breaks(n = 10), date_labels = "%b-%Y") +
-        theme_bw() 
-      
+    output$ts_single <- renderPlotly({
+      if(input$neighborhood == "None"){
+        ts_singleBoro() %>% 
+           plot_ly(., x = ~Date, y = ~Med_RentBoro, type = "scatter", mode = "lines+markers") %>% 
+          layout(yaxis = list(title = paste("Median Rent for", input$boro)))
+      } else if(ts_single() %>% filter(Type == input$type) %>% nrow() < 10){
+        validate("We apologize, but there is not enough data to produce an informative plot. Please select a different combination of inputs.")
+      }
+      else{
+      ts_single() %>% 
+        filter(Type == input$type) %>% 
+        plot_ly(., x = ~Date, y = ~Median_Rent, type = "scatter", mode = "lines+markers")
+      }
     })
+    
+    output$ts_multiple <- renderPlotly({
+      if(input$neighborhood_two == "None"){plotly_empty()} else{
+      ts_multiple() %>% 
+        plot_ly(., x = ~Date, y = ~Studio, type = "scatter", mode = "lines+markers", name = "Studio") %>% 
+        add_trace(., x = ~Date, y = ~One_Bedroom, type = "scatter", mode = "lines+markers", name = "One Bedroom") %>% 
+        add_trace(., x = ~Date, y = ~Two_Bedrooms, type = "scatter", mode = "lines+markers", name = "Two Bedrooms") %>% 
+        add_trace(., x = ~Date, y = ~Three_Bedrooms, type = "scatter", mode = "lines+markers", name = "Three+ Bedrooms") %>% layout(title = paste("Median Rent in", input$neighborhood_two, "Across Apartment Types"), hovermode = "x", yaxis = list(title=""))
+        }
+      })
   
     #--- DATA SPREADSHEET ---#
     
