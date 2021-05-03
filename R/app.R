@@ -9,6 +9,7 @@ library(plotly)
 library(shinythemes)
 library(prophet)
 library(dygraphs)
+library(shinycssloaders)
 
 # getting data
 df <- read_rds("../data/all_data.rds")
@@ -165,10 +166,12 @@ ui <- fluidPage(theme = shinytheme("cosmo"),
                                                     label = "Forecast")
                                        ),
                                 column(9,
-                                       dygraphOutput("plot_forecast")
+                                       withSpinner(dygraphOutput("plot_forecast"))
                                        )
                               )
                            ),
+                           conditionalPanel(condition="$('html').hasClass('shiny-busy')",
+                                            tags$div("Loading...")),
                                     ###ROW 2####################################
                               # Add mcmc sample input and change point prior scale
                               # fluidRow(
