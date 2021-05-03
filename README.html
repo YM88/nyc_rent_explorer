@@ -378,21 +378,10 @@ Table of Contents
 <li>
 <a href="#use-case">Use Case</a>
 </li>
-</ul>
-</li>
 <li>
-<a href="#how-to-use-the-app">How to Use the App</a>
-<ul>
-<li>
-<a href="#prerequisites">Prerequisites</a>
-</li>
-<li>
-<a href="#example">Example</a>
+<a href="#limitations">Limitations</a>
 </li>
 </ul>
-</li>
-<li>
-<a href="#roadmap">Roadmap</a>
 </li>
 <li>
 <a href="#contributing">Contributing</a>
@@ -418,7 +407,7 @@ Table of Contents
 <ul>
 <li>Borough</li>
 <li>Neighborhood</li>
-<li>Date (every month since January 2010)</li>
+<li>Date (every month from January 2010 - April 2021)</li>
 <li>Studio Medan Rent</li>
 <li>One Bedroom Median Rent</li>
 <li>Two Bedrooms Median Rent</li>
@@ -429,39 +418,27 @@ Table of Contents
 </div>
 <div id="use-case" class="section level3">
 <h3>Use Case</h3>
-<p>text here</p>
-<!-- USAGE -->
+<p>The purpose of this app is to help parties interested in New York City rent data. For example, you may be a renter in New York City wondering if you’re paying a fair amount of rent to your landlord. This app could help you compare what you’re being charged now to the usual tenant in your area. Also, you can see what your rent should likely in the next 1, 5, or more years.</p>
+<p>Alternatively, if you are a prospective landlord attempting to break into the rental market and figure out what you should be charging for rent in your area, you can get a general idea by using this application and can explore median rents in other area.</p>
+<p>In truth, there are many ways in which this app can be applied and used. If you are just interested in exploring New York City rent data at all, then this Shiny app is a great way to do so.</p>
 </div>
-</div>
-<div id="how-to-use-the-app" class="section level2">
-<h2>How to Use the App</h2>
-<p>To get a local copy up and running follow these simple steps.</p>
-<div id="prerequisites" class="section level3">
-<h3>Prerequisites</h3>
-<ul>
-<li>Things to do before running the project</li>
-</ul>
-</div>
-<div id="example" class="section level3">
-<h3>Example</h3>
-<p>Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.</p>
-<p><em>For more examples, please refer to the <a href="https://example.com">Documentation</a></em></p>
-<!-- ROADMAP -->
-</div>
-</div>
-<div id="roadmap" class="section level2">
-<h2>Roadmap</h2>
-<p>See the <a href="https://github.com/github_username/repo_name/issues">open issues</a> for a list of proposed features (and known issues).</p>
+<div id="limitations" class="section level3">
+<h3>Limitations</h3>
+<p>As responsible data scientists, it is our duty to point out the limitations of this Shiny app and the data.</p>
+<p>This data used in the app only includes median rents from each neighborhood for each month. It is important to note that variation in rent may vary widely in some neighborhoods, which this app cannot demonstrate. Moreover, some neighborhoods have much less data than other neighborhoods. Belmont, Bronx has almost no data for studios and one bedrooms whereas Chelsea, Manhattan has plenty of data going all the way back to 2010. The app will give an appropriate warning when there are less than 10 data points, but this fact is still important to keep in mind.</p>
+<p>The data used also excludes Staten Island completely, and does not include some neighborhoods from the other boroughs. For example, one neighborhood of importance that is not present in the data is Hell’s Kitchen (also known as Clinton).</p>
+<p>While this applucation may be a good starting place to explore, compare, and predict rents in New York City neighborhoods, it should not serve as the only resource for these things.</p>
 <!-- CONTRIBUTING -->
+</div>
 </div>
 <div id="contributing" class="section level2">
 <h2>Contributing</h2>
-<p>Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are <strong>greatly appreciated</strong>.</p>
+<p>Now that you’ve read about some of our limitations, please feel free to help! Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are <strong>greatly appreciated</strong>.</p>
 <ol style="list-style-type: decimal">
 <li>Fork the Project</li>
-<li>Create your Feature Branch (<code>git checkout -b feature/AmazingFeature</code>)</li>
+<li>Create your Feature Branch (<code>git checkout -b AmazingFeature</code>)</li>
 <li>Commit your Changes (<code>git commit -m 'Add some AmazingFeature'</code>)</li>
-<li>Push to the Branch (<code>git push origin feature/AmazingFeature</code>)</li>
+<li>Push to the Branch (<code>git push origin AmazingFeature</code>)</li>
 <li>Open a Pull Request</li>
 </ol>
 <!-- LICENSE -->
@@ -482,6 +459,7 @@ Table of Contents
 <div id="acknowledgements" class="section level2">
 <h2>Acknowledgements</h2>
 <p>We’d like to thank Professor Richard Ressler for his help and guidance in completing this project (and teaching us how to do it in the first place). We’d also like to thank our coffee machines for helping keep us caffeinated while building this Shiny app.</p>
+<p><br> <br> <br></p>
 </div>
 
 
