@@ -304,10 +304,6 @@ server <- function(input, output, session) {
 shinyApp(ui, server)
 ```
 
-```{r}
-
-```
-
 
 
 ```{r fig.width=7}
@@ -365,50 +361,3 @@ dyplot.prophet(m, forecast)
 ```{r}
 prophet_plot_components(m, forecast)
 ```
-```{r}
-df.cv <- cross_validation(m, initial=180, period=60, horizon=120, units='days')
-tail(df.cv)
-
-plot_cross_validation_metric(df.cv, metric = 'mape')
-```
-```{r}
-
-prophet_model <- eventReactive(input$plot_btn2,{
-    
-    req(dat(), 
-        # ("ds" %in% dat()), "y" %in% names(dat()),
-        input$n.changepoints,
-        input$seasonality_scale, input$changepoint_scale,
-        input$holidays_scale, input$mcmc.samples,
-        input$mcmc.samples, input$interval.width,
-        input$uncertainty.samples)
-    
-    if(input$growth == "logistic"){
-      validate(
-        need(try("cap" %in% names(dat())),
-             "Error: for logistic 'growth', the input dataframe must have a column 'cap' that specifies the capacity at each 'ds'."))
-      
-    }
-    
-    datx <- dat() %>% 
-      mutate(y = log(y))
-    
-    kk <- prophet(datx,
-                  growth = input$growth,
-                  changepoints = NULL,
-                  n.changepoints = input$n.changepoints,
-                  yearly.seasonality = input$yearly,
-                  weekly.seasonality = input$monthly,
-                  holidays = holidays_upload(),
-                  seasonality.prior.scale = input$seasonality_scale,
-                  changepoint.prior.scale = input$changepoint_scale,
-                  holidays.prior.scale = input$holidays_scale,
-                  mcmc.samples = input$mcmc.samples,
-                  interval.width = input$interval.width,
-                  uncertainty.samples = input$uncertainty.samples,
-                  fit = T)
-    
-    return(kk)
-  })
-```
-
