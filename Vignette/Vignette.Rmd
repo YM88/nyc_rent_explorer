@@ -35,10 +35,11 @@ h2 {
 <br>
 
 NYC Rent Explorer is a shiny application that utilizes New York City renting data 
-in order to analyze rent pricing trends. It examines how different apartment types
-and areas of NYC has changed over time.
+in order to analyze rent pricing trends. It examines how the cost of different apartment 
+types and areas of NYC have changed over time.
 
-The usefulness of the app
+This is a multi-purpose app which can provide useful market information to renters, 
+landlords, economists and researchers. 
 
 The github repository can be found [here](https://github.com/STAT-413-613-21S/fp_final-project-cjy)
 
@@ -55,9 +56,16 @@ neighborhood and apartment type (default studio) has changed over time.
 The user has the option to view the median price time series for different apartment types by using the 
 "Select an apartment type" drop-down menu.
 
+
 ## Compare Neighborhoods
 
+Text
+
+
 ## Time Series Forcast
+
+Text
+
 
 ## Data Spreadsheet
 
@@ -69,21 +77,34 @@ at the raw data for Woodside, Queens, they simply type in the neighborhood and b
 
 ![](../images/spreadsheet-example.png)
 
-
 ## Required Packages
+
+NYC Rent Explorer utilizes various R packages. A short description and link to their respective package websites are referenced below:
+
+ - [shiny](https://cran.r-project.org/web/packages/leaflet/index.html): Used to create this application     
+ - [rgdal](https://cran.r-project.org/web/packages/rgdal/index.html): Provides spatial information for interactive, leaflet map     
+ - [leaflet](https://cran.r-project.org/web/packages/leaflet/index.html): Create dynamic map that shows the neighborhood of NYC   
+ - [plotly](https://cran.r-project.org/web/packages/plotly/index.html): Create more powerful, interactive maps    
+ - [dygraphs](https://cran.r-project.org/web/packages/dygraphs/index.html): Useful library to enhance time series graphics    
+ - [prophet](https://cran.r-project.org/web/packages/prophet/index.html): Library revolving around time series work, used in our time series forcast tab    
+ - [shinythemes](https://cran.r-project.org/web/packages/shinythemes/index.html): Used to create a sleeker visual design for our shiny application   
+ - [tidyverse](https://www.tidyverse.org/packages/): Useful collection of libraries; mainly used for data cleaning in EDA in our case
 
 
 ## Data Source and Structure
 
+Our data is structured so that each observation (row) stores the neighborhood name, borough name, a date (which is the first day of every month since 2010 till 2021), median rent price for a studio, one bedroom, two bedroom, three bedroom+, and the longitude and latitude coordinates of the neighborhood.
+
 NYC Rent Explorer sources its data from [StreetEasy.com](https://streeteasy.com/blog/download-data/),
-which is a company that focuses in analyzing real estate in New York City. 
+which is an online real estate marketplace that exclusively operations in New York City.
 
 NYC Rent Explorer is in no way related nor sponsored with [StreetEasy.com](https://streeteasy.com/blog/download-data/)
 
-## EDA Inputs, Controls, and Outputs
-
-
-## Statistical Analysis Inputs, Controls, and Outputs
-
 
 ## References
+
+Fill with some interesting, and/or useful references
+
+
+
+
