@@ -82,9 +82,20 @@ across different sized apartments.
 ![](../gifs/tab2-example-2.gif)
 
 
-## Time Series Forcast
+## Time Series Forecast
 
-Empty
+The time series forecast tab allows user to see time series decomposition 
+of their selection, however, the chosen options must not have any missing values
+for decomposition plot. If this happens, the user gets a message telling them that they should go with different neighborhoods or apartment types. The decomposition plot provides user with information such as the observed pattern, trend, seasonality, and randomness.
+![](../gifs/tab3-example-1.gif)
+
+The forecast button enables the user to run a simple time series forecasting on their choices. If the
+This uses facebook's prophet library in the backend and requires 20-30 seconds to run. We also provide the user with a numeric input they can choose for the numbers of years they like to see the prediction. Needless to say, more years will lead to higher uncertainty. If the choices have missing values, this can lead to less accurate results as well. 
+
+The resulting plot will show the actual values as black dots, the predicted values as blue line and the confidence interval as the shaded area with light blue.
+
+
+![](../gifs/tab3-example-2.gif)
 
 
 ## Data Spreadsheet
@@ -123,7 +134,11 @@ NYC Rent Explorer is in no way related nor sponsored with [StreetEasy.com](https
 
 ## References
 
-Fill with some interesting, and/or useful references
+1. [Decomposition of time series](https://nwfsc-timeseries.github.io/atsa-labs/sec-tslab-decomposition-of-time-series.html)
+
+2. [Multiplicative Seasonality - Prophet](https://facebook.github.io/prophet/docs/multiplicative_seasonality.html)
+
+
 
 
 

@@ -158,19 +158,27 @@ ui <- fluidPage(theme = shinytheme("cosmo"),
                                        selectInput("type_forecast", 
                                                    "Select an apartment type:", 
                                                    choices = apartment_types, 
-                                                   selected = "Studio"),
+                                                   selected = "Studio")
+                                ),
+                                column(9,
+                                       plotOutput("plot_decompose")
+                                       )
+                              ),
+                              
+                              fluidRow(
+                                column(3,
                                        hr(),
                                        
                                        sliderInput(
                                          "years_to_forecast",
-                                          label = "How many years to forecast:",
+                                          label = "Years to forecast",
                                           min = 1, 
                                           max = 10, 
                                           value = 5),
                                        
                                        actionButton("run_forecast", 
                                                     label = "Forecast")
-                                ),
+                                       ),
                                 column(9,
                                        dygraphOutput("plot_forecast")
                                        )
@@ -535,6 +543,21 @@ server <- function(input, output, session) {
       select(ds='Date', y=input$type_forecast)
     
   })
+  
+  output$plot_decompose <- renderPlot({
+    validate(
+      need(!any(is.na(df_ts()[,2])), 
+           paste('Selected options has missing values and time series decomposition is not possible.',
+                 '',
+                 "Please choose a different selection if you'd like to see the time series decomposition.",
+                 '',
+                 'Forecasting can still run but may lead to less accurate results.', 
+                 sep = '\n'))
+      )
+    
+      plot(decompose(ts(df_ts()[,2], frequency = 12)))
+  })
+  
   
   # running prophet after action button
   m <- eventReactive(input$run_forecast, {
