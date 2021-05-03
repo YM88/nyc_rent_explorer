@@ -123,8 +123,11 @@ NYC Rent Explorer is in no way related nor sponsored with [StreetEasy.com](https
 
 ## References
 
-Fill with some interesting, and/or useful references
+* ["New York City Renters Statistics and Trends," 01/28/2020, ValuePenguin.](https://www.valuepenguin.com/new-york-city-renters-statistics)
 
+* ["New York City Rents Continue To Fall," 4/23/2021, Forbes.](https://www.forbes.com/sites/lisachamoff/2021/04/23/new-york-city-rents-hit-new-record-lows/?sh=3e697cc72396)
+
+* []()
 
 
 

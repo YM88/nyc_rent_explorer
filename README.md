@@ -19,15 +19,9 @@
       <ul>
         <li><a href="#data">Data</a></li>
         <li><a href="#use-case">Use Case</a></li>
+        <li><a href="#limitations">Limitations</a></li>
       </ul>
     </li>
-    <li>
-      <a href="#how-to-use-the-app">How to Use the App</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-      </ul>
-    </li>
-    <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
@@ -107,3 +101,6 @@ Project Link: [https://github.com/STAT-413-613-21S/fp_final-project-cjy](https:/
 ## Acknowledgements
 
 We'd like to thank Professor Richard Ressler for his help and guidance in completing this project (and teaching us how to do it in the first place). We'd also like to thank our coffee machines for helping keep us caffeinated while building this Shiny app. 
+
+<br> <!-- Some space at bottom of page so acknowledgements --> 
+
