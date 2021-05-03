@@ -25,14 +25,13 @@ knitr::opts_chunk$set(echo = TRUE)
   font-weight: bold;
 }
 h2 {
+  margin-top: 50px;
   font-size: 26px;
   font-weight: bold;
 }
 </style>
 
 <!-- CSS STYLES -->
-
-<br>
 
 NYC Rent Explorer is a shiny application that utilizes New York City renting data 
 in order to analyze rent pricing trends. It examines how the cost of different apartment 
@@ -56,15 +55,36 @@ neighborhood and apartment type (default studio) has changed over time.
 The user has the option to view the median price time series for different apartment types by using the 
 "Select an apartment type" drop-down menu.
 
+![](../gifs/tab1-example-video.gif)
+
 
 ## Compare Neighborhoods
 
-Text
+The compare neighborhoods tab allows the user to important pieces of information. 
+First the user selects a neighborhood and/or borough to view a time series of the media rent 
+of **all** apartment types in the area. This is a great way to see the cost difference of apartments
+with a certain number of rooms in a specific NYC region.
+
+Toggle which apartment types you want visible on the time series chart by clicking the name of the 
+apartment type on the chart legend (right of screen).
+
+![](../gifs/tab2-example-1.gif)
+
+<br>
+<br>
+
+The second graph is an overlaid histogram that allows the user to select two different neighborhoods,
+boroughs and apartment types, and then compare the median rent distributions of the two.
+
+This is an effective tool allowing the user to see the rent price disparities between neighborhoods, and 
+across different sized apartments.
+
+![](../gifs/tab2-example-2.gif)
 
 
 ## Time Series Forcast
 
-Text
+Empty
 
 
 ## Data Spreadsheet
