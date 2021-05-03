@@ -118,7 +118,8 @@ NYC Rent Explorer utilizes various R packages. A short description and link to t
  - [plotly](https://cran.r-project.org/web/packages/plotly/index.html): Create more powerful, interactive maps    
  - [dygraphs](https://cran.r-project.org/web/packages/dygraphs/index.html): Useful library to enhance time series graphics    
  - [prophet](https://cran.r-project.org/web/packages/prophet/index.html): Library revolving around time series work, used in our time series forcast tab    
- - [shinythemes](https://cran.r-project.org/web/packages/shinythemes/index.html): Used to create a sleeker visual design for our shiny application   
+ - [shinythemes](https://cran.r-project.org/web/packages/shinythemes/index.html): Used to create a sleeker visual design for our shiny application  
+ - [shinycssloaders](https://cran.r-project.org/web/packages/shinycssloaders/index.html): Used to add a loading spinner while output is calculating or recalculating
  - [tidyverse](https://www.tidyverse.org/packages/): Useful collection of libraries; mainly used for data cleaning in EDA in our case
 
 
