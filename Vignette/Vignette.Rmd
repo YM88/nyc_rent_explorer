@@ -90,7 +90,7 @@ for decomposition plot. If this happens, the user gets a message telling them th
 ![](../gifs/tab3-example-1.gif)
 
 The forecast button enables the user to run a simple time series forecasting on their choices. If the
-This uses facebook's prophet library in the backend and requires 20-30 seconds to run. We also provide the user with a numeric input they can choose for the numbers of years they like to see the prediction. Needless to say, more years will lead to higher uncertainty. If the choices have missing values, this can lead to less accurate results as well. 
+This uses Facebook's prophet library in the backend and requires 20-30 seconds to run. We also provide the user with a numeric input they can choose for the numbers of years they like to see the prediction. Needless to say, more years will lead to higher uncertainty. If the choices have missing values, this can lead to less accurate results as well. 
 
 The resulting plot will show the actual values as black dots, the predicted values as blue line and the confidence interval as the shaded area with light blue.
 
