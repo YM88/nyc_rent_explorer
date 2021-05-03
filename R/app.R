@@ -124,7 +124,9 @@ ui <- fluidPage(theme = shinytheme("cosmo"),
                                                    selected = "Studio"),
                                        ),
                                 column(9,
+                                       hr(),
                                        plotlyOutput("histogram")
+                                       
                                        )
                                     )
                            ),
@@ -325,13 +327,15 @@ server <- function(input, output, session) {
       filter(Borough %in% c(input$boro_compare,
                             input$boro_compare2),
              Neighborhood %in% c(input$neighborhood_compare,
-                                 input$neighborhood_compare2))
+                                 input$neighborhood_compare2),
+             Date >= "2016-01-01")
   })
   
   hist_filterBoro <- reactive({
     df %>% 
       filter(Borough %in% c(input$boro_compare, 
-                            input$boro_compare2)) %>% 
+                            input$boro_compare2),
+             Date >= "2016-01-01") %>% 
       group_by(Borough, Date) %>% 
       summarize(Studio = mean(Studio, na.rm = T),
                 One_Bedroom = mean(One_Bedroom, na.rm = T),
@@ -431,7 +435,7 @@ server <- function(input, output, session) {
                               na.omit()), name = paste(input$type_compare2,
                                                        "in", 
                                                        input$boro_compare2)) %>% 
-        layout(title = "Distribution of Rent for Selected Apartment Types in Selected Boroughs",
+        layout(title = "Distribution of Rent in Last 5 Years for Selected Apartment Types in Selected Boroughs",
                xaxis = list(title="($)"),
                yaxis = list(title="Count"),
                barmode = "overlay")
@@ -462,7 +466,7 @@ server <- function(input, output, session) {
                               na.omit()), 
                       name = paste(input$type_compare2, "in", 
                                    input$boro_compare2)) %>% 
-        layout(title = "Distribution of Rent for Selected Apartment Types in Selected Areas", 
+        layout(title = "Distribution of Rent in Last 5 Years for Selected Apartment Types in Selected Areas", 
                xaxis = list(title="($)"), 
                yaxis = list(title="Count"), 
                barmode = "overlay")
@@ -479,7 +483,7 @@ server <- function(input, output, session) {
                               pull(input$type_compare2) %>% na.omit()), 
                       name = paste(input$type_compare2, "in", 
                                    input$neighborhood_compare2)) %>% 
-        layout(title = "Distribution of Rent for Selected Apartment Types in Selected Areas", 
+        layout(title = "Distribution of Rent in Last 5 Years for Selected Apartment Types in Selected Areas", 
                xaxis = list(title="($)"), 
                yaxis = list(title="Count"), 
                barmode = "overlay")
