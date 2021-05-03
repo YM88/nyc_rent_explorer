@@ -49,7 +49,7 @@ ui <- fluidPage(theme = shinytheme("cosmo"),
                   ))
                 ),
                 # App title
-                navbarPage("RENT DATA FOR NEW YORK CITY", collapsible = TRUE,
+                navbarPage("NEW YORK CITY RENT EXPLORER", collapsible = TRUE,
                            
                            ###TAB 1#############################################
                            tabPanel("Map and Time Series Analysis",
@@ -82,25 +82,10 @@ ui <- fluidPage(theme = shinytheme("cosmo"),
                                   ),
                                   
                                 ),
-                           ###ROW 2#############################################
-                           # sidebarLayout(
-                           #     sidebarPanel(#3,
-                           #            # h1("Welcome to the NYC Rent Data Explorer!"), 
-                           #            # p("This web application is designed for the benefit of renters, landlords, and multifamily market researchers in New York City with up to date and useful analysis of rental market data and trends."),
-                           #            # p("The rent data comes from", a(href = "https://streeteasy.com/blog/download-data/", "StreetEasy.com,"), "an online real estate and apartment marketplace compnay exclusively for New York City homes and apartments."), 
-                           #            # p("This web application is designed for the benefit of renters, landlords, and multifamily market researchers in New York City with up to date and useful analysis of rental market data and trends."),
-                           #            # p("This web application is designed for the benefit of renters, landlords, and multifamily market researchers in New York City with up to date and useful analysis of rental market data and trends."),
-                           #            # align = "center"
-                           #        ),
-                           #     mainPanel(#9,
-                           #        plotlyOutput("ts_single")
-                           #        )
-                           #        
-                           #     )
                               ),
                            
                            ###TAB 2#############################################
-                           tabPanel("Compare Neighborhoods",
+                           tabPanel("Compare Neighborhoods & Types",
                                     ###ROW 1####################################
                            fluidRow(
                                 column(3,
@@ -365,22 +350,22 @@ server <- function(input, output, session) {
         plot_ly(., x = ~Date,
                 y = ~Med_Studio,
                 type = "scatter",
-                mode = "lines+markers",
+                mode = "lines",
                 name = "Studio") %>% 
         add_trace(., x = ~Date,
                   y = ~Med_One,
                   type = "scatter",
-                  mode = "lines+markers",
+                  mode = "lines",
                   name = "One Bedroom") %>% 
         add_trace(., x = ~Date,
                   y = ~Med_Two,
                   type = "scatter",
-                  mode = "lines+markers",
+                  mode = "lines",
                   name = "Two Bedrooms") %>% 
         add_trace(., x = ~Date,
                   y = ~Med_Three,
                   type = "scatter",
-                  mode = "lines+markers",
+                  mode = "lines",
                   name = "Three+ Bedrooms") %>% 
         layout(title = paste("Median Rent in", 
                              input$boro_compare, 
