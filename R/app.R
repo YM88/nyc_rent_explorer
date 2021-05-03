@@ -40,6 +40,9 @@ ui <- fluidPage(theme = shinytheme("cosmo"),
                     h1 {
                       font-family: 'Bitter', serif;
                     }
+                    .modebar-container {
+                      display: none !important;
+                    }
                   "), HTML(
                     "#sidebar {
                       background-color: #ffffff;}"
