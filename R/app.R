@@ -124,7 +124,8 @@ ui <- fluidPage(theme = shinytheme("cosmo"),
                                                    selected = "Studio"),
                                        ),
                                 column(9,
-                                       plotlyOutput("histogram"))
+                                       plotlyOutput("histogram")
+                                       )
                                     )
                            ),
                            
@@ -170,8 +171,6 @@ ui <- fluidPage(theme = shinytheme("cosmo"),
                                        )
                               )
                            ),
-                           conditionalPanel(condition="$('html').hasClass('shiny-busy')",
-                                            tags$div("Loading...")),
                                     ###ROW 2####################################
                               # Add mcmc sample input and change point prior scale
                               # fluidRow(
@@ -182,7 +181,6 @@ ui <- fluidPage(theme = shinytheme("cosmo"),
                               # 
                               # )
                             # ),
-                           
                            
                            ###TAB 4#############################################
                            tabPanel("Data Spreadsheet",
@@ -257,7 +255,10 @@ server <- function(input, output, session) {
   
   # render the leaflet plot for showing the location of the selected neighborhood
   output$mapPlot = renderLeaflet({
-    if (input$neighborhood == "None") {
+    if(length(input$neighborhood)==0){
+      return(NULL)
+    }  
+    else if (input$neighborhood == "None") {
       leaflet(height = "380px") %>%
         addTiles() %>%
         setView(-73.87, 40.73, zoom = 10)
@@ -275,7 +276,9 @@ server <- function(input, output, session) {
   })
   
   output$ts_single <- renderPlotly({
-    if(input$neighborhood == "None"){
+    if(length(input$neighborhood)==0){
+      return(NULL)
+    } else if(input$neighborhood == "None"){
       ts_singleBoro() %>% 
         plot_ly(., 
                 x = ~Date, 
@@ -348,7 +351,9 @@ server <- function(input, output, session) {
   
   #--- PLOTS ---#
   output$ts_multiple <- renderPlotly({
-    if(input$neighborhood_compare == "None"){
+    if(length(input$neighborhood_compare)==0){
+      return(NULL)
+    } else if(input$neighborhood_compare == "None"){
       ts_multipleBoro() %>% 
         plot_ly(., x = ~Date,
                 y = ~Med_Studio,
@@ -384,25 +389,25 @@ server <- function(input, output, session) {
                 x = ~Date,
                 y = ~Studio,
                 type = "scatter",
-                mode = "lines+markers",
+                mode = "lines",
                 name = "Studio") %>% 
         add_trace(.,
                   x = ~Date,
                   y = ~One_Bedroom,
                   type = "scatter",
-                  mode = "lines+markers",
+                  mode = "lines",
                   name = "One Bedroom") %>% 
         add_trace(.,
                   x = ~Date,
                   y = ~Two_Bedrooms,
                   type = "scatter",
-                  mode = "lines+markers",
+                  mode = "lines",
                   name = "Two Bedrooms") %>% 
         add_trace(.,
                   x = ~Date,
                   y = ~Three_Bedrooms,
                   type = "scatter",
-                  mode = "lines+markers",
+                  mode = "lines",
                   name = "Three+ Bedrooms") %>% 
         layout(title = paste("Median Rent in", 
                              input$neighborhood_compare, 
@@ -419,6 +424,9 @@ server <- function(input, output, session) {
   # Any ideas on how to shorten this code are welcome.
   
   output$histogram <- renderPlotly({
+    if(length(input$neighborhood_compare)==0 | length(input$neighborhood_compare2)==0){
+      return(NULL)
+    }
     if(input$neighborhood_compare == "None" & input$neighborhood_compare2 == "None"){
       plot_ly(alpha = 0.6) %>% 
         add_histogram(x = ~(hist_filterBoro() %>%
@@ -486,7 +494,7 @@ server <- function(input, output, session) {
                yaxis = list(title="Count"), 
                barmode = "overlay")
     } else{
-      plot_ly(data = ., alpha = 0.6) %>%
+      plot_ly(alpha = 0.6) %>%
         add_histogram(x = ~(hist_filter() %>%
                               filter(Neighborhood == input$neighborhood_compare) %>%
                               pull(input$type_compare) %>%
