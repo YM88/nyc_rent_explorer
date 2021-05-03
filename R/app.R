@@ -172,17 +172,6 @@ ui <- fluidPage(theme = shinytheme("cosmo"),
                            ),
                            conditionalPanel(condition="$('html').hasClass('shiny-busy')",
                                             tags$div("Loading...")),
-                                    ###ROW 2####################################
-                              # Add mcmc sample input and change point prior scale
-                              # fluidRow(
-                              #   column(3,
-                              #          verbatimTextOutput("text_prophet")),
-                              #   # column(9,
-                              #   #        plotOutput("plot_trend_forecast")),
-                              # 
-                              # )
-                            # ),
-                           
                            
                            ###TAB 4#############################################
                            tabPanel("Data Spreadsheet",
@@ -552,7 +541,7 @@ server <- function(input, output, session) {
     req(df_ts())
     prophet(df_ts(),
             changepoint.prior.scale = 0.01, 
-            seasonality.mode = 'multiplicative', 
+            seasonality.mode = 'additive', 
             mcmc.samples = 50)
   })
   
