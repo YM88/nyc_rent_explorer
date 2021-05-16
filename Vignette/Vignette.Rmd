@@ -1,11 +1,13 @@
 ---
 title: "NYC Rent Explorer Vignette"
-author: "Joshua V. O'Steen, Christopher Hoffman, Yashar Mansouri"
+author: "Yashar Mansouri, Joshua V. O'Steen, Christopher Hoffman"
 date: "5/2/2021"
 output:
-   html_document:
-    toc: true
-    toc_float: true
+  html_document:
+    toc: yes
+    toc_float: yes
+  pdf_document:
+    toc: yes
 ---
 
 ```{r setup, include=FALSE}
@@ -40,7 +42,7 @@ types and areas of NYC have changed over time.
 This is a multi-purpose app which can provide useful market information to renters, 
 landlords, economists and researchers. 
 
-The github repository can be found [here](https://github.com/STAT-413-613-21S/fp_final-project-cjy)
+The github repository can be found [here](https://github.com/YM88/nyc_rent_explorer)
 
 
 ## Map and Time Series Analysis
